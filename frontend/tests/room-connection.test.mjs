@@ -73,6 +73,18 @@ test('ROOM-07 capacity refusal (close 1012) schedules no retry timer; the next r
   await [...f.intervals.values()][0].fn();
   assert.equal(f.sockets.length,2);f.connection.stop();
 });
+test('LIVE-05 default timers call the globals without an object receiver, as browsers require',async()=>{
+  // Browsers throw "Illegal invocation" when window.setInterval runs with another object as `this`; emulate that.
+  const original={setInterval,clearInterval,setTimeout,clearTimeout};const calls=[];
+  const guard=name=>function(...args){if(this!==undefined&&this!==globalThis)throw new TypeError('Illegal invocation');calls.push(name);return original[name].call(globalThis,...args);};
+  for(const name of Object.keys(original))globalThis[name]=guard(name);
+  try{
+    const connection=new RoomConnection({roomId:'room-a',loadSnapshot:async()=>state(),openSocket:()=>({send(){},close(){}}),
+      onSnapshot:()=>{},onConnected:()=>{},onError:e=>{throw e;},onRevoked:()=>{},isTerminal:()=>false});
+    await connection.start();connection.stop();
+    assert.deepEqual(calls,['setInterval','clearInterval','clearTimeout']);
+  }finally{Object.assign(globalThis,original);}
+});
 test('backoff grows to its cap and never creates duplicate retry timers',async()=>{
   const f=fixture();await f.connection.start();
   for(let i=0;i<12;i++) {
