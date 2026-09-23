@@ -54,6 +54,15 @@ more than one maintainer. The ruleset id and its state are recorded in the
    images, pushes them and creates the GitHub Release. Record the run in the
    verification status in the same change that bumps the version.
 
+GitHub applies `[skip ci]` to the push event of a tag when the tagged commit's message
+carries it, so no `release` run appears. Tag a commit without the marker, or start the
+workflow on the existing tag by hand; the dispatched run still sees a tag ref and
+publishes the same way:
+
+```bash
+gh workflow run release.yml --ref v0.2.0
+```
+
 Version numbers follow the backend `version` in build.gradle.kts and the frontend
 package.json; bump both in the pull request that prepares the release.
 
