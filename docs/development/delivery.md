@@ -42,29 +42,50 @@ more than one maintainer. The ruleset id and its state are recorded in the
 
 ## Cutting a release
 
-1. Confirm `main` is green in `ci` and that the [verification status](../verification/README.md)
-   cites the revision you release.
-2. Tag from `main` with a semantic version and push the tag:
+Releases are semantic versions on annotated tags `vX.Y.Z`; the GitHub Release notes
+are generated from the merged pull requests since the previous tag, so pull request
+titles are the changelog.
+
+1. Prepare the version in the last pull request before the tag: `version` in
+   backend/build.gradle.kts, and `version` in frontend/package.json together with the
+   two `version` fields of frontend/package-lock.json (running
+   `npm version --no-git-tag-version X.Y.Z` inside frontend/ updates both JSON files).
+   Bump the patch number for fixes, the minor number for features.
+2. Confirm the merge commit on `main` is green in `ci` and that its message does not
+   contain `[skip ci]` (see below).
+3. Tag that commit and push the tag:
 
    ```bash
-   git tag v0.2.0 && git push origin v0.2.0
+   git tag -a v0.2.2 -m "v0.2.2: what this release changes" && git push origin v0.2.2
    ```
 
-3. The `release` workflow verifies the tagged tree again, packages and smokes the
-   images, pushes them and creates the GitHub Release. Record the run in the
-   verification status in the same change that bumps the version.
+4. Watch the `release` workflow (Actions, workflow `release`); it takes a few minutes.
+   Green means: the tagged tree passed scripts/verify again, the images passed
+   scripts/smoke-release, `ghcr.io/<owner>/kahoot-backend` and `kahoot-frontend`
+   carry the new tag and `latest`, and the GitHub Release exists with
+   `quiz-room-vX.Y.Z.jar` attached.
+5. Record the run in the [verification status](../verification/README.md): result,
+   tag, revision, environment, run URL. That commit carries `[skip ci]`.
+6. Try the published stack once before announcing it: pull the images by tag, start
+   compose.release.yaml as described in [deployment](../architecture/deployment.md),
+   and open a room in a browser. The gate proves the images boot and route; a browser
+   session is the only check of the UI today.
 
-GitHub applies `[skip ci]` to the push event of a tag when the tagged commit's message
-carries it, so no `release` run appears. Tag a commit without the marker, or start the
-workflow on the existing tag by hand; the dispatched run still sees a tag ref and
-publishes the same way:
+If the tag push started no `release` run, the tagged commit's message carries
+`[skip ci]`: GitHub applies the marker to the push event of a tag as well, and to
+pull request events, and it matches the marker anywhere in the message, including the
+body. Never write the marker in prose inside a commit message. Either tag a commit
+without the marker or start the workflow on the existing tag by hand; the dispatched
+run still sees a tag ref and publishes the same way:
 
 ```bash
-gh workflow run release.yml --ref v0.2.0
+gh workflow run release.yml --ref v0.2.2
 ```
 
-Version numbers follow the backend `version` in build.gradle.kts and the frontend
-package.json; bump both in the pull request that prepares the release.
+Rollback is a redeploy of the previous tag: every version stays on GHCR, only
+`latest` moves. Delete a GitHub Release only when its images were never used. Images
+are built on the `ubuntu-latest` runner and are linux/amd64 only; Apple Silicon and
+other arm64 hosts run them under emulation until a multi-architecture build exists.
 
 ## Hotfix
 

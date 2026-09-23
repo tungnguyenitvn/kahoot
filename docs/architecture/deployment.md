@@ -37,8 +37,10 @@ runs it before publishing images to GHCR ([delivery pipeline](../development/del
 
 Still not implemented for production: TLS termination in front of nginx and the
 secure-cookie flag behind it, idle timeouts, secret management, resource budgets,
-backup/restore exercises and operational monitoring. Publishing an image is delivery,
-not deployment; do not expose the development server as a production web server.
+backup/restore exercises, operational monitoring and multi-architecture images (the
+published images are linux/amd64; arm64 hosts run them under emulation). Publishing an
+image is delivery, not deployment; do not expose the development server as a
+production web server.
 
 Redis Cluster is NOT supported: although room keys share a hash tag, registration and archive
 cleanup touch a global active-room key in the same scripts. Multiple backend
