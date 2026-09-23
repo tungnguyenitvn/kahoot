@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+# Builds (unless SKIP_BUILD=1) and boots the release stack from compose.release.yaml, then checks that the
+# nginx entry point serves the SPA, proxies the API and keeps CSRF enforcement. Used by ci.yml and release.yml.
+set -euo pipefail
+cd "$(dirname "$0")/.."
+export DB_PASSWORD="${DB_PASSWORD:-smoke-only}" DEMO_PASSWORD="${DEMO_PASSWORD:-smoke-only}"
+export PUBLIC_PORT="${PUBLIC_PORT:-8081}"
+compose() { docker compose -f compose.release.yaml "$@"; }
+trap 'compose down --volumes --remove-orphans' EXIT
+compose config --quiet
+[ "${SKIP_BUILD:-0}" = "1" ] || compose build
+compose up -d
+base="http://127.0.0.1:${PUBLIC_PORT}"
+for i in $(seq 1 60); do
+  curl -fsS "$base/api/auth/csrf" >/dev/null 2>&1 && break
+  if [ "$i" = 60 ]; then echo "release stack did not answer within 3 minutes"; compose logs --tail 50 backend frontend; exit 1; fi
+  sleep 3
+done
+curl -fsS "$base/" | grep -qi '<app-root' || { echo "SPA index not served"; exit 1; }
+curl -fsS "$base/api/auth/csrf" | grep -q '"token"' || { echo "API proxy failed"; exit 1; }
+code=$(curl -s -o /dev/null -w '%{http_code}' -X POST "$base/api/rooms/join" -H 'Content-Type: application/json' -d '{}')
+[ "$code" = "403" ] || { echo "expected CSRF rejection 403 through the proxy, got $code"; exit 1; }
+printf 'release smoke OK: %s serves the SPA, proxies /api and enforces CSRF\n' "$base"

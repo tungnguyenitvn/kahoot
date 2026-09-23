@@ -1,0 +1,56 @@
+# Release stack built from the multi-stage images (or pulled from GHCR). One host, no TLS: put a TLS
+# terminator in front and set PUBLIC_ORIGIN and COOKIE_SECURE accordingly. See docs/architecture/deployment.md.
+name: quiz-room-release
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: quiz
+      POSTGRES_USER: quiz
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?set DB_PASSWORD}
+    volumes: [release-postgres:/var/lib/postgresql/data]
+    healthcheck:
+      test: [CMD-SHELL, "pg_isready -U quiz -d quiz"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+  redis:
+    image: redis:7.4-alpine
+    command: [redis-server, --appendonly, "yes", --appendfsync, everysec, --maxmemory, 256mb, --maxmemory-policy, noeviction]
+    volumes: [release-redis:/data]
+    healthcheck:
+      test: [CMD, redis-cli, ping]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+  backend:
+    image: ${BACKEND_IMAGE:-ghcr.io/tungnguyenitvn/kahoot-backend:latest}
+    build: {context: ./backend, dockerfile: Dockerfile.release}
+    init: true
+    environment:
+      DB_HOST: postgres
+      DB_PASSWORD: ${DB_PASSWORD:?set DB_PASSWORD}
+      REDIS_HOST: redis
+      DEMO_ENABLED: ${DEMO_ENABLED:-true}
+      DEMO_USERNAME: ${DEMO_USERNAME:-host@example.test}
+      DEMO_PASSWORD: ${DEMO_PASSWORD:?set DEMO_PASSWORD}
+      WS_ALLOWED_ORIGINS: ${PUBLIC_ORIGIN:-http://localhost:8081}
+      COOKIE_SECURE: ${COOKIE_SECURE:-false}
+    healthcheck:
+      test: [CMD-SHELL, "curl -fsS http://localhost:8080/actuator/health >/dev/null"]
+      interval: 5s
+      timeout: 3s
+      start_period: 40s
+      retries: 30
+    depends_on:
+      postgres: {condition: service_healthy}
+      redis: {condition: service_healthy}
+  frontend:
+    image: ${FRONTEND_IMAGE:-ghcr.io/tungnguyenitvn/kahoot-frontend:latest}
+    build: {context: ./frontend, dockerfile: Dockerfile.release}
+    ports: ["${BIND_ADDRESS:-127.0.0.1}:${PUBLIC_PORT:-8081}:80"]
+    depends_on:
+      backend: {condition: service_healthy}
+volumes:
+  release-postgres:
+  release-redis:

@@ -7,6 +7,7 @@
 | [0003](0003-documentation-and-evidence.md) | Layered documentation and evidence | Accepted | 2026-09-23 |
 | [0004](0004-bounded-notification-and-repair.md) | Bounded notification and provisioning retry repair | Accepted | 2026-09-23 |
 | [0005](0005-evidence-location.md) | Evidence location and verification status | Accepted | 2026-09-23 |
+| [0006](0006-ci-cd-release-images.md) | CI/CD on GitHub Actions with release images | Accepted | 2026-09-23 |
 
 ## Template
 

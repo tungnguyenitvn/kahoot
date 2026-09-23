@@ -1,14 +1,38 @@
-name: verify
-on: [push, pull_request]
+name: ci
+on:
+  push:
+    branches: [main]
+  pull_request:
+permissions:
+  contents: read
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
 jobs:
   verify:
+    name: verify gate
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
-      - run: ./scripts/verify
+      - name: Lua smoke, backend tests, documentation lint, Angular tests and build
+        run: ./scripts/verify
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: verification-reports
-          path: backend/build/reports/tests
+          path: |
+            backend/build/reports/tests
+            backend/build/test-results
+          if-no-files-found: ignore
+  release-images:
+    name: release images build and smoke
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      BACKEND_IMAGE: kahoot-backend:ci
+      FRONTEND_IMAGE: kahoot-frontend:ci
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build the release images and smoke the stack
+        run: ./scripts/smoke-release

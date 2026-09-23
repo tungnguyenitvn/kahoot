@@ -1,0 +1,67 @@
+name: release
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+permissions:
+  contents: write
+  packages: write
+concurrency:
+  group: release-${{ github.ref }}
+jobs:
+  release:
+    name: verify, build, smoke, publish
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify the released tree
+        run: ./scripts/verify
+      - name: Image names
+        id: names
+        run: |
+          owner="${GITHUB_REPOSITORY_OWNER,,}"
+          version="${GITHUB_REF_NAME}"
+          [ "${GITHUB_REF_TYPE}" = "tag" ] || version="sha-${GITHUB_SHA::7}"
+          echo "backend=ghcr.io/${owner}/kahoot-backend" >> "$GITHUB_OUTPUT"
+          echo "frontend=ghcr.io/${owner}/kahoot-frontend" >> "$GITHUB_OUTPUT"
+          echo "version=${version}" >> "$GITHUB_OUTPUT"
+      - name: Build the release images and smoke the stack
+        env:
+          BACKEND_IMAGE: ${{ steps.names.outputs.backend }}:${{ steps.names.outputs.version }}
+          FRONTEND_IMAGE: ${{ steps.names.outputs.frontend }}:${{ steps.names.outputs.version }}
+        run: ./scripts/smoke-release
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Push images
+        env:
+          BACKEND_IMAGE: ${{ steps.names.outputs.backend }}:${{ steps.names.outputs.version }}
+          FRONTEND_IMAGE: ${{ steps.names.outputs.frontend }}:${{ steps.names.outputs.version }}
+        run: |
+          docker push "$BACKEND_IMAGE"
+          docker push "$FRONTEND_IMAGE"
+          if [ "${GITHUB_REF_TYPE}" = "tag" ]; then
+            docker tag "$BACKEND_IMAGE" "${{ steps.names.outputs.backend }}:latest" && docker push "${{ steps.names.outputs.backend }}:latest"
+            docker tag "$FRONTEND_IMAGE" "${{ steps.names.outputs.frontend }}:latest" && docker push "${{ steps.names.outputs.frontend }}:latest"
+          fi
+      - name: Extract the boot jar
+        env:
+          BACKEND_IMAGE: ${{ steps.names.outputs.backend }}:${{ steps.names.outputs.version }}
+        run: |
+          id=$(docker create "$BACKEND_IMAGE")
+          docker cp "$id":/app/app.jar "quiz-room-${{ steps.names.outputs.version }}.jar"
+          docker rm "$id" >/dev/null
+      - uses: actions/upload-artifact@v4
+        with:
+          name: release-jar
+          path: quiz-room-*.jar
+      - name: GitHub release
+        if: github.ref_type == 'tag'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          printf 'Images: %s:%s and %s:%s\n\n' "${{ steps.names.outputs.backend }}" "${{ steps.names.outputs.version }}" "${{ steps.names.outputs.frontend }}" "${{ steps.names.outputs.version }}" > notes.md
+          gh release create "$GITHUB_REF_NAME" quiz-room-*.jar --title "$GITHUB_REF_NAME" --notes-file notes.md --generate-notes

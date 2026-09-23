@@ -80,7 +80,19 @@ The three AGENTS files and the GitHub templates are linted too.
 
 ## CI
 
-scripts/verify is the CI entry point. It runs the Lua smoke stage first, then the
-backend stage, then the frontend stage whose image also executes the documentation
-check (Node available); every stage runs in Docker.
-Do not substitute lightweight tests for unavailable full verification.
+Two GitHub Actions workflows live in .github/workflows
+([ADR 0006](../adr/0006-ci-cd-release-images.md)):
+
+- ci.yml runs on pull requests and on pushes to main. The `verify` job executes
+  scripts/verify (Lua smoke, backend tests and package, documentation lint, Angular
+  tests and build, every stage in Docker) and uploads the Gradle reports. The
+  `release-images` job executes scripts/smoke-release, which builds the release images
+  and boots compose.release.yaml to check the SPA, the API proxy and CSRF enforcement.
+- release.yml runs on tags `v*` or manually. It repeats scripts/verify on the tagged
+  tree, builds and smokes the release images, pushes them to GHCR as
+  `ghcr.io/<owner>/kahoot-backend` and `kahoot-frontend` with the tag and `latest`, and
+  creates a GitHub Release carrying the boot jar. It needs no secret beyond
+  GITHUB_TOKEN.
+
+Do not substitute lightweight tests for unavailable full verification; a green
+`release-images` job proves the images boot and route, not the application behavior.

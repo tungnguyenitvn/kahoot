@@ -1,0 +1,13 @@
+# Release image: compile the Angular bundle, serve it from nginx and proxy /api and /ws to the backend service.
+FROM node:24.15.0-bookworm-slim AS build
+WORKDIR /app
+COPY package.json package-lock.json ./
+RUN npm ci --no-audit --no-fund
+COPY angular.json tsconfig.json tsconfig.app.json ./
+COPY src src
+RUN npm run build
+
+FROM nginx:1.29-alpine
+COPY nginx.release.conf /etc/nginx/conf.d/default.conf
+COPY --from=build /app/dist/quiz-room-ui/browser /usr/share/nginx/html
+EXPOSE 80

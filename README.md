@@ -1,5 +1,8 @@
 # Quiz Room — sample game kiểu Kahoot
 
+[![ci](https://github.com/tungnguyenitvn/kahoot/actions/workflows/ci.yml/badge.svg)](https://github.com/tungnguyenitvn/kahoot/actions/workflows/ci.yml)
+[![release](https://github.com/tungnguyenitvn/kahoot/actions/workflows/release.yml/badge.svg)](https://github.com/tungnguyenitvn/kahoot/actions/workflows/release.yml)
+
 Sample end-to-end dùng **Java 24 + Spring Boot 4.1.1 + Gradle 8.14.3 + Angular 22**. Host tạo quiz, mở phòng; người chơi vào bằng PIN, trả lời theo thứ tự và nhận điểm theo bậc. REST xử lý command; WebSocket phát state realtime. Redis giữ trạng thái live và leaderboard, PostgreSQL giữ tài khoản, quiz bất biến và lịch sử.
 
 ## Chạy bằng Docker
@@ -26,6 +29,22 @@ texlua scripts/test-room.lua . # smoke test Lua với Redis double; texlua hoặ
 ```
 
 Các lệnh offline không kiểm tra Spring, Redis, PostgreSQL, browser hay WebSocket thật. `./scripts/verify` dùng compose cô lập, không đụng volume dev. Phạm vi từng gate và ma trận acceptance ID → test: [testing](docs/development/testing.md).
+
+## Release
+
+CI (`ci.yml`) chạy `scripts/verify` và `scripts/smoke-release` trên mọi PR và push lên
+`main`. Gắn tag `vX.Y.Z` rồi push tag: workflow `release` verify lại cây được tag, build
+image release đa tầng (`backend/Dockerfile.release`, `frontend/Dockerfile.release`),
+smoke test stack `compose.release.yaml`, đẩy image lên GHCR
+(`ghcr.io/tungnguyenitvn/kahoot-backend`, `ghcr.io/tungnguyenitvn/kahoot-frontend`)
+và tạo GitHub Release kèm jar. Chạy stack từ image đã publish:
+
+```bash
+DB_PASSWORD=... DEMO_PASSWORD=... PUBLIC_ORIGIN=http://localhost:8081 docker compose -f compose.release.yaml up
+```
+
+Stack release chưa có TLS; đặt TLS terminator phía trước và chỉnh `PUBLIC_ORIGIN`,
+`COOKIE_SECURE` theo [deployment](docs/architecture/deployment.md).
 
 ## Tài liệu và workflow AI
 
