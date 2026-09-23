@@ -62,9 +62,8 @@ fields) are recorded rather than rewritten.
 | texlua scripts/test-room.lua . | NOT RUN: texlua not installed on the reviewing machine |
 | scripts/verify (Docker) | NOT RUN in this session; no code changed |
 
-Environment: macOS, Node 22.22.3, JDK 25.0.4 present but unused, no git metadata.
-The working tree is still an extracted archive, so no revision can be cited;
-initialize version control before the next verification run.
+Environment: macOS, Node 22.22.3, JDK 25.0.4 present but unused. The working tree was
+still an extracted archive at the time; it was committed afterwards as 62b9fe4 on main.
 
 ## Contract fixes 2026-09-23 (code + docs)
 
@@ -85,5 +84,5 @@ Environment: macOS host, Docker Desktop 29.7.2 (linux/aarch64); images
 eclipse-temurin:24-jdk with the gradle:8.14.3-jdk21 distribution stage,
 postgres:17-alpine, redis:7.4-alpine, node:24.15.0; Gradle 8.14.3. Frontend
 dependencies were resolved during this run and written to frontend/package-lock.json.
-Still no git metadata, so no revision can be cited; the Gradle XML reports under
-backend/build/test-results are the artifact of this run.
+The verified tree was committed afterwards as revision 62b9fe4 on main; the Gradle
+XML reports under backend/build/test-results are the artifact of this run.
