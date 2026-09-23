@@ -80,26 +80,10 @@ The three AGENTS files and the GitHub templates are linted too.
 
 ## CI
 
-Two GitHub Actions workflows live in .github/workflows
-([ADR 0006](../adr/0006-ci-cd-release-images.md)):
-
-- ci.yml runs on pull requests, on pushes to main and by hand. The `verify` job
-  restores `.cache/gradle` and `.cache/npm` with actions/cache, executes scripts/verify
-  (Lua smoke, backend tests and package, documentation lint, Angular tests and build,
-  every stage in Docker), uploads the Gradle reports and publishes the boot jar and the
-  Angular bundle as the `build-artifacts` workflow artifact. The `release-images` job
-  waits for `verify`, downloads that artifact and executes scripts/smoke-release, which
-  packages it into the release images and boots compose.release.yaml to check the SPA,
-  the API proxy and CSRF enforcement.
-- release.yml runs on tags `v*` or manually. On one runner it repeats scripts/verify on
-  the tagged tree, packages and smokes the release images from the artifacts it just
-  built, pushes them to GHCR as `ghcr.io/<owner>/kahoot-backend` and `kahoot-frontend`
-  with the tag and `latest`, and creates a GitHub Release carrying that same jar. It
-  needs no secret beyond GITHUB_TOKEN.
-
+scripts/verify is what CI runs; the workflows, their triggers, the required checks,
+the caches and the release and hotfix procedure are owned by [delivery](delivery.md).
 Caches are keyed on the Gradle build files and the npm lockfile
 ([ADR 0007](../adr/0007-ci-caches-and-verified-artifacts.md)); a dependency change
 misses the exact key and falls back to the newest cache for the same operating system.
-
 Do not substitute lightweight tests for unavailable full verification; a green
-`release-images` job proves the images boot and route, not the application behavior.
+release-image job proves the images boot and route, not the application behavior.

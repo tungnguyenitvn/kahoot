@@ -21,6 +21,7 @@ sample, not a production reference implementation.
 | Which numeric limits and timings apply? | Game rules in [domain](domain/game.md), wire-visible bounds in [contracts](contracts/README.md), every other value in the [limits table](architecture/quality-and-risks.md#limits-and-timings) | The same values in other documents |
 | Why this trade-off? | [ADR index](adr/README.md) | Current task progress |
 | How do humans/AI change this safely? | [Workflow](development/workflow.md) | Product behavior |
+| How does a change reach a release? | [Delivery pipeline](development/delivery.md) | Gate scopes, test evidence |
 | What was actually checked? | [Verification status](verification/README.md) | Claims inferred from test names |
 | How to run and recover? | [Runbook](operations/runbook.md) | Feature specifications |
 

@@ -31,7 +31,7 @@ remains the only account provisioning. scripts/smoke-release packages the artifa
 (run ./scripts/verify first, or set BUILD_ARTIFACTS=1 to build them without tests),
 boots the stack and checks that the SPA, the API proxy and CSRF enforcement answer; CI
 runs it after the verify job on every push and pull request, and the release workflow
-runs it before publishing images to GHCR ([testing](../development/testing.md#ci),
+runs it before publishing images to GHCR ([delivery pipeline](../development/delivery.md),
 [ADR 0006](../adr/0006-ci-cd-release-images.md),
 [ADR 0007](../adr/0007-ci-caches-and-verified-artifacts.md)).
 

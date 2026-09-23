@@ -45,7 +45,8 @@ DB_PASSWORD=... DEMO_PASSWORD=... PUBLIC_ORIGIN=http://localhost:8081 docker com
 ```
 
 Stack release chưa có TLS; đặt TLS terminator phía trước và chỉnh `PUBLIC_ORIGIN`,
-`COOKIE_SECURE` theo [deployment](docs/architecture/deployment.md).
+`COOKIE_SECURE` theo [deployment](docs/architecture/deployment.md). Quy trình cắt
+release, hotfix và required checks: [delivery](docs/development/delivery.md).
 
 ## Tài liệu và workflow AI
 

@@ -22,6 +22,8 @@ contract + store/Lua tests. Login/catalog content is not required unless impacte
 
 Use Draft, Accepted, Implemented, Verified on the change record. They are not
 interchangeable; docs often state an accepted requirement before it is verified.
+What the pipeline does after the merge, and how a release or hotfix is cut, is owned by
+[delivery](delivery.md).
 
 ## Task brief template
 
