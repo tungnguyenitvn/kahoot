@@ -14,7 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 45
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Verify the released tree
         run: ./scripts/verify
       - name: Image names
@@ -31,7 +31,7 @@ jobs:
           BACKEND_IMAGE: ${{ steps.names.outputs.backend }}:${{ steps.names.outputs.version }}
           FRONTEND_IMAGE: ${{ steps.names.outputs.frontend }}:${{ steps.names.outputs.version }}
         run: ./scripts/smoke-release
-      - uses: docker/login-action@v3
+      - uses: docker/login-action@v4
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
@@ -54,7 +54,7 @@ jobs:
           id=$(docker create "$BACKEND_IMAGE")
           docker cp "$id":/app/app.jar "quiz-room-${{ steps.names.outputs.version }}.jar"
           docker rm "$id" >/dev/null
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: release-jar
           path: quiz-room-*.jar

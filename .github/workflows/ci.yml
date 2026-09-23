@@ -15,10 +15,10 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Lua smoke, backend tests, documentation lint, Angular tests and build
         run: ./scripts/verify
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: always()
         with:
           name: verification-reports
@@ -34,6 +34,6 @@ jobs:
       BACKEND_IMAGE: kahoot-backend:ci
       FRONTEND_IMAGE: kahoot-frontend:ci
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Build the release images and smoke the stack
         run: ./scripts/smoke-release
