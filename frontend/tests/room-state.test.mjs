@@ -10,7 +10,7 @@ test('ties share a competition rank and stable participant ordering',()=>{
  const rows=leaderboard({c:{id:'c',score:800},b:{id:'b',score:1000},a:{id:'a',score:1000}});
  assert.deepEqual(rows.map(x=>[x.id,x.rank]),[['a',1],['b',1],['c',3]]);
 });
-test('snapshot validator accepts a full room and rejects malformed or private QUESTION data',()=>{
+test('LIVE-04 snapshot validator accepts a full room and rejects malformed or private QUESTION data',()=>{
  const room={id:'r',pin:'123456',title:'Quiz',phase:'QUESTION',version:1,serverTime:1000,deadline:2000,
   questionNumber:1,questionCount:1,question:{roundId:'q',text:'?',options:['a','b','c','d'],seconds:5,correctOption:null},
   players:{p:{id:'p',name:'P',active:true,answered:false,score:0}},me:{role:'PLAYER',participantId:'p',answer:null}};

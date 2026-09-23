@@ -4,6 +4,7 @@ import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.session.MapSession;
 import org.springframework.session.SessionRepository;
@@ -21,6 +22,7 @@ class RoomWebSocketHubTest {
         return socket;
     }
     @Test @SuppressWarnings("unchecked")
+    @DisplayName("LIVE-05 burst and SYNC do not spawn another snapshot while one is running; the newest state still ships")
     void burstAndSyncDoNotSpawnAnotherSnapshotWhileOneIsRunning() throws Exception {
         var rooms=mock(RedisRooms.class);SessionRepository<MapSession> sessions=mock(SessionRepository.class);
         when(sessions.findById("session")).thenReturn(new MapSession());

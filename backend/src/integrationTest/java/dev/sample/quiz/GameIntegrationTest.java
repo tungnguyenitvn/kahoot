@@ -40,7 +40,8 @@ class GameIntegrationTest {
     private JsonNode snapshot(String id,String principal){return rooms.command(id,"snapshot",principal,Map.of());}
     @AfterEach void clean(){for(String id:fixtures){redis.opsForSet().remove(RedisRooms.ACTIVE,id);redis.delete(RedisRooms.keys(id));}}
 
-    @Test void parallelRetriesProduceOneReceiptOneScoreAndOneAnswerEvent() throws Exception {
+    @Test @DisplayName("LIVE-03 parallel retries produce one receipt, one score and one event")
+    void parallelRetriesProduceOneReceiptOneScoreAndOneAnswerEvent() throws Exception {
         String id=create();join(id,"G:p");control(id,"start","","s");
         List<Callable<String>> jobs=new ArrayList<>();for(int i=0;i<32;i++)jobs.add(()->answer(id,"G:p","one",0).toString());
         try(var pool=Executors.newVirtualThreadPerTaskExecutor()){
@@ -51,7 +52,8 @@ class GameIntegrationTest {
         assertEquals(1,rooms.meta(id).path("correctCount").asInt());
         assertEquals(1000d,redis.opsForZSet().score(RedisRooms.keys(id).get(4),snapshot(id,"G:p").path("me").path("participantId").asText()));
     }
-    @Test void parallelCorrectPlayersGetDistinctRanksAndTierScores() throws Exception {
+    @Test @DisplayName("LIVE-03 concurrent correct answers get distinct ranks and tier scores")
+    void parallelCorrectPlayersGetDistinctRanksAndTierScores() throws Exception {
         String id=create();for(int i=0;i<20;i++)join(id,"G:p"+i);control(id,"start","","s");
         List<Callable<JsonNode>> jobs=new ArrayList<>();for(int i=0;i<20;i++){String p="G:p"+i;jobs.add(()->answer(id,p,"one",0));}
         try(var pool=Executors.newVirtualThreadPerTaskExecutor()){for(var f:pool.invokeAll(jobs))f.get();}
@@ -59,7 +61,8 @@ class GameIntegrationTest {
         for(Object raw:redis.opsForHash().values(RedisRooms.keys(id).get(3))){var receipt=json.readTree(raw.toString());ranks.add(receipt.path("correctOrder").asInt());total+=receipt.path("points").asInt();}
         assertEquals(20,ranks.size());assertTrue(ranks.contains(1)&&ranks.contains(20));assertEquals(11500,total);
     }
-    @Test void receiptSurvivesRoundTransitionAndConflictingAnswerIsRejected(){
+    @Test @DisplayName("LIVE-03 ROOM-03 receipt survives round transition; conflicting answer and stale round are rejected")
+    void receiptSurvivesRoundTransitionAndConflictingAnswerIsRejected(){
         String id=create();join(id,"G:p");control(id,"start","","s");var first=answer(id,"G:p","one",0);
         control(id,"reveal","one","r");control(id,"next","one","n");
         assertEquals(first,answer(id,"G:p","one",0));
@@ -68,7 +71,8 @@ class GameIntegrationTest {
         control(id,"next","one","n"); // same command returns its original acceptance, never advances again
         assertEquals(2,rooms.meta(id).path("index").asInt());
     }
-    @Test void scoreAndCorrectOptionStayHiddenUntilReveal(){
+    @Test @DisplayName("LIVE-04 score and correct option stay hidden until reveal")
+    void scoreAndCorrectOptionStayHiddenUntilReveal(){
         String id=create();join(id,"G:wrong");join(id,"G:right");control(id,"start","","s");
         answer(id,"G:wrong","one",1);var receipt=answer(id,"G:right","one",0);
         assertFalse(receipt.has("points"));assertFalse(receipt.has("correctOrder"));
@@ -78,7 +82,8 @@ class GameIntegrationTest {
         control(id,"reveal","one","r");state=snapshot(id,"G:right");assertEquals(0,state.path("question").path("correctOption").asInt());
         assertEquals(1000,state.path("players").path(state.path("me").path("participantId").asText()).path("score").asInt());
     }
-    @Test void deadlineMembershipAndNameChecksDoNotDependOnPostgres(){
+    @Test @DisplayName("LIVE-01 LIVE-02 JOIN-02 deadline, membership and name checks do not depend on PostgreSQL")
+    void deadlineMembershipAndNameChecksDoNotDependOnPostgres(){
         String id=create();join(id,"G:A");
         assertEquals("NAME_TAKEN",assertThrows(ApiException.class,()->join(id,"g:a")).code);
         assertEquals("ROOM_ACCESS_DENIED",assertThrows(ApiException.class,()->snapshot(id,"G:intruder")).code);
@@ -91,13 +96,15 @@ class GameIntegrationTest {
         assertEquals("ROOM_ACCESS_DENIED",assertThrows(ApiException.class,()->snapshot(id,"G:A")).code);
         assertEquals("ROOM_ACCESS_DENIED",assertThrows(ApiException.class,()->answer(id,"G:A","one",0)).code);
     }
-    @Test void corruptKeyTypeIsRejectedBeforeAnyMutation(){
+    @Test @DisplayName("LIVE-07 corrupt key type is rejected before any mutation")
+    void corruptKeyTypeIsRejectedBeforeAnyMutation(){
         String id=create();join(id,"G:p");control(id,"start","","s");
         var before=rooms.meta(id);redis.delete(RedisRooms.keys(id).get(4));redis.opsForValue().set(RedisRooms.keys(id).get(4),"wrong-type");
         assertEquals("STATE_CORRUPT",assertThrows(ApiException.class,()->answer(id,"G:p","one",0)).code);
         assertEquals(before,rooms.meta(id));assertEquals(0L,redis.opsForHash().size(RedisRooms.keys(id).get(3)));
     }
-    @Test void activeRegistrationRepairsLiveStateButNeverResurrectsFinishedRoom(){
+    @Test @DisplayName("STUDIO-05 active registration repairs live state but never resurrects a finished room")
+    void activeRegistrationRepairsLiveStateButNeverResurrectsFinishedRoom(){
         String id=create();rooms.registerActive(id);
         assertEquals(Boolean.TRUE,redis.opsForSet().isMember(RedisRooms.ACTIVE,id));
         redis.opsForSet().remove(RedisRooms.ACTIVE,id);rooms.registerActive(id);
@@ -115,7 +122,8 @@ class GameIntegrationTest {
         assertEquals("COMMAND_LIMIT",rejected.code);assertEquals(409,rejected.status); // capacity is a state conflict, not RFC 6585 rate limiting
         assertTrue(rooms.command(id,"kick",host,Map.of("participantId",participant,"commandId","ledger-0")).path("accepted").asBoolean()); // replay of a ledgered command still works when the ledger is full
     }
-    @Test void websocketAuthenticatesByCookiePushesStateAndRejectsMutations() throws Exception {
+    @Test @DisplayName("LIVE-01 LIVE-05 WebSocket authenticates by cookie and Origin, pushes state and rejects mutations")
+    void websocketAuthenticatesByCookiePushesStateAndRejectsMutations() throws Exception {
         Browser owner=new Browser();Browser guest=new Browser();owner.init();guest.init();
         var login=owner.client.send(owner.builder("/api/auth/login").header("Content-Type","application/x-www-form-urlencoded").header("X-XSRF-TOKEN",owner.csrf)
             .POST(HttpRequest.BodyPublishers.ofString("username=host%40example.test&password=local-quiz-only")).build(),HttpResponse.BodyHandlers.ofString());
@@ -151,7 +159,8 @@ class GameIntegrationTest {
         assertEquals("ROOM_ACCESS_DENIED",json.readTree(reconnected.revoked.get(5,TimeUnit.SECONDS)).path("code").asText());
         second.abort();
     }
-    @Test void realCookiesCsrfAuthorizationReconnectAndArchiveReplay() throws Exception {
+    @Test @DisplayName("LOGIN-01 LOGIN-03 JOIN-03 JOIN-04 STUDIO-05 LIVE-01 LIVE-06 real cookies, CSRF, authorization, idempotent create and archive replay")
+    void realCookiesCsrfAuthorizationReconnectAndArchiveReplay() throws Exception {
         Browser owner=new Browser();Browser guest=new Browser();Browser stranger=new Browser();
         owner.init();guest.init();stranger.init();
         var csrfFailure=guest.request("POST","/api/rooms/join", "{}",false);

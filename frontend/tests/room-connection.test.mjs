@@ -23,7 +23,7 @@ test('initial transient HTTP failure keeps polling and starts WS after recovery'
   await [...f.intervals.values()][0].fn();assert.equal(f.sockets.length,1);assert.equal(f.snapshots.length,1);
   f.connection.stop();
 });
-test('socket open sends SYNC, close schedules one bounded backoff, REST cannot bypass it',async()=>{
+test('ANSWER-06 socket open sends only SYNC, close schedules one bounded backoff, REST cannot bypass it',async()=>{
   const f=fixture();await f.connection.start();const s=f.sockets[0];s.onopen();
   assert.deepEqual(JSON.parse(s.sent[0]),{type:'SYNC'});s.onclose();
   assert.equal(f.timeouts.size,1);assert.equal([...f.timeouts.values()][0].ms,500);
@@ -37,7 +37,7 @@ test('terminal access failure cancels scheduled reconnect and periodic reconcili
   await f.connection.start();f.sockets[0].onclose();denied=true;await f.connection.refresh();
   assert.equal(f.timeouts.size,0);assert.equal(f.intervals.size,0);assert.equal(f.revoked.length,1);
 });
-test('REVOKED rejects late HTTP result and queued socket-open callbacks',async()=>{
+test('ANSWER-06 REVOKED rejects late HTTP result and queued socket-open callbacks; nothing is resent',async()=>{
   const pending=deferred();let calls=0;const f=fixture(()=>++calls===1?Promise.resolve(state()):pending.promise);
   await f.connection.start();const socket=f.sockets[0], lateOpen=socket.onopen;
   const refresh=f.connection.refresh();socket.onmessage({data:JSON.stringify({type:'REVOKED',code:'SESSION_EXPIRED'})});

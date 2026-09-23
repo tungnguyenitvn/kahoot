@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.UUID;
 import dev.sample.quiz.identity.Identity;
 import dev.sample.quiz.catalog.QuizCatalog;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.dao.DataAccessResourceFailureException;
@@ -17,6 +18,7 @@ import static org.mockito.ArgumentMatchers.*;
 
 class RoomServiceTest {
     @Test @SuppressWarnings("unchecked")
+    @DisplayName("STUDIO-05 SQL failure after init must not remove the live registration; retry repairs it")
     void sqlFailureAfterInitMustNotRemoveLiveRegistrationAndRetryRepairsIt() {
         var json=new ObjectMapper();var rooms=mock(RedisRooms.class);var redis=mock(StringRedisTemplate.class);
         SetOperations<String,String> active=mock(SetOperations.class);when(redis.opsForSet()).thenReturn(active);
