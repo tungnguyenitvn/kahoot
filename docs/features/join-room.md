@@ -13,7 +13,8 @@ browser guest identity được giữ trong session và gắn với một partic
 
 ## Main flow
 
-1. Validate PIN đúng sáu chữ số và nickname không rỗng, tối đa 24 ký tự.
+1. Validate PIN đúng định dạng và nickname không rỗng, độ dài theo
+   [REST contract](../contracts/rest-api.md#room-commands).
 2. Gọi `GET /api/auth/csrf` và `GET /api/auth/me` để tạo/khôi phục guest session.
 3. Gọi `POST /api/rooms/join` với `pin` và `name`.
 4. Nhận room snapshot, sau đó khởi tạo Live room feature.

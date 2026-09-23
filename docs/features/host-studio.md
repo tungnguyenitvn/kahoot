@@ -22,8 +22,10 @@ hành duy nhất.
 ## Quiz authoring
 
 - Host nhập title và xây dựng danh sách câu hỏi tạm thời.
-- Mỗi câu có đúng 4 options A–D, `correctOption` từ 0 đến 3 và thời gian 5–120 giây.
-- Tối đa 20 câu; có thể xóa câu trước khi lưu.
+- Mỗi câu có các option A–D với một đáp án đúng và thời gian giới hạn; số câu tối đa,
+  số option và khoảng thời gian theo [domain rules](../domain/game.md), bound validate
+  theo [REST contract](../contracts/rest-api.md#catalog-host).
+- Có thể xóa câu trước khi lưu.
 - **Lưu bản nháp** gọi `POST /api/quizzes` và xóa danh sách câu đã lưu sau success; các field editor còn lại giữ nguyên.
 - Quiz đã publish không chỉnh sửa tại chỗ; room copy immutable question content khi
   được tạo.

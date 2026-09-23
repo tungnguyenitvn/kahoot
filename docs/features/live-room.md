@@ -18,7 +18,8 @@ deadline, receipt, thứ tự đúng và score; Angular chỉ hiển thị autho
 - Main stage thay đổi theo phase; các phase và transition hợp lệ nằm trong
   [bảng state transitions](../domain/game.md#state-transitions).
 - Player list hiển thị active/removed và answered state.
-- Leaderboard hiển thị tối đa Top 10, cùng điểm dùng competition rank.
+- Leaderboard hiển thị số hàng theo [bảng limits](../architecture/quality-and-risks.md#limits-and-timings),
+  cùng điểm dùng competition rank.
 - Client không tự tính score, correct order hoặc deadline acceptance.
 
 ## Lobby

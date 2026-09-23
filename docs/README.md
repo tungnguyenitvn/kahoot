@@ -18,7 +18,7 @@ sample, not a production reference implementation.
 | Which coding conventions apply? | [Conventions](development/conventions.md) | Architecture rules, schemas |
 | Which gates exist and which acceptance ID has evidence? | [Testing and traceability](development/testing.md) | Executed results |
 | Which game rules and state transitions apply? | [Domain rules](domain/game.md) | Screen behavior, wire shapes |
-| Which numeric limits and timings apply? | [Limits table](architecture/quality-and-risks.md#limits-and-timings) | The same values in other documents |
+| Which numeric limits and timings apply? | Game rules in [domain](domain/game.md), wire-visible bounds in [contracts](contracts/README.md), every other value in the [limits table](architecture/quality-and-risks.md#limits-and-timings) | The same values in other documents |
 | Why this trade-off? | [ADR index](adr/README.md) | Current task progress |
 | How do humans/AI change this safely? | [Workflow](development/workflow.md) | Product behavior |
 | What was actually checked? | [Verification record](verification/refactor-review.md) | Claims inferred from test names |

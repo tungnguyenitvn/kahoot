@@ -5,10 +5,11 @@ No p95/p99 latency or supported concurrent-player capacity has been measured.
 
 ## Limits and timings
 
-Canonical values for admission, timing and retention settings. Other documents link
-here instead of repeating numbers. Wire-visible validation bounds stay in
-[contracts](../contracts/README.md); game rules stay in [domain](../domain/game.md).
-Change a value here and in its source in the same change.
+Ownership precedence for numbers: game rules live in [domain](../domain/game.md),
+wire-visible validation bounds in [contracts](../contracts/README.md), and every other
+admission, timing, retention and presentation value here. Other documents link instead
+of repeating a value; rule L4 in scripts/check-docs.mjs fails the gate when a value is
+repeated elsewhere. Change a value here and in its source in the same change.
 
 | Setting | Value | Source |
 |---|---|---|
@@ -27,9 +28,12 @@ Change a value here and in its source in the same change.
 | WebSocket registration | 1,000 connections per process, 150 per room | RoomWebSocketHub |
 | WebSocket control replies | at most 1 PONG/ERROR per second per connection | RoomWebSocketHub |
 | WebSocket send guard | 10 s send time, 256 KB buffer per session | RoomWebSocketHub |
+| WebSocket inbound text | wire bound owned by the [WebSocket contract](../contracts/websocket.md) | RoomWebSocketHub |
+| PIN reservation attempts | 100 random PINs per room creation, then PIN_UNAVAILABLE | RoomService.reservePin |
 | Client REST reconciliation | every 5 s while the room route is open | room-connection.mjs |
 | Client reconnect backoff | 500 ms doubling to a 10 s cap, jitter factor 0.8–1.2 | room-connection.mjs |
 | Client clock refresh | every 100 ms | room-store.ts |
+| Leaderboard rows shown | top 10 visible scores | room.ts |
 | Scheduler pool | 3 platform threads shared by timer, archive and flush | SchedulingConfig |
 
 ## Acceptance scenarios
