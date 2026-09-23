@@ -30,8 +30,10 @@ theo room version trước khi ACK.
 
 - HIST-01: Host chỉ xem được history của chính mình.
 - HIST-02: Room chưa FINISHED không được coi là archived result hoàn chỉnh.
-- HIST-03: Replay hoặc worker retry không nhân đôi answer/score trong PostgreSQL.
 - HIST-04: Kết quả archive vẫn đọc được sau khi Redis live keys được cleanup.
+
+Replay hoặc worker retry không nhân đôi answer/score là invariant LIVE-06 trong
+[domain rules](../domain/game.md#acceptance-invariants).
 
 ## Contracts
 

@@ -35,7 +35,7 @@ phân biệt kiểm tra đã chạy với những gate còn thiếu.
 
 ## Thiết kế
 
-- [Feature index](docs/features/README.md) · [Luồng live quiz](docs/features/live-quiz.md) · [quy tắc game](docs/domain/game.md)
+- [Feature index](docs/features/README.md) · [invariant live quiz](docs/domain/game.md#acceptance-invariants) · [quy tắc game](docs/domain/game.md)
 - [Tổng quan kiến trúc](docs/architecture/overview.md) · [Backend architecture](docs/architecture/backend.md) · [Frontend architecture](docs/architecture/frontend.md) · [Redis live state](docs/adr/0002-redis-game-state.md)
 - [Contracts index](docs/contracts/README.md) · [REST API](docs/contracts/rest-api.md) · [Redis room](docs/contracts/redis-room.md) · [WebSocket](docs/contracts/websocket.md)
 - [WebSocket architecture notes](docs/architecture/websocket.md)

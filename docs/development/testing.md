@@ -19,7 +19,7 @@ results. Never infer pass from the presence or name of a test.
 Concurrency/deduplication, round fencing, deadline equality, privacy, malformed
 requests, WS auth/Origin/membership, reconnect/revoke/disposal, notification bounds,
 provisioning failure between stores, ordered archive replay and ACK retry.
-New tests name the acceptance ID they cover (ANSWER-02, ROOM-03 ...) so evidence
+New tests name the acceptance ID they cover (LIVE-03, ROOM-03 ...) so evidence
 traces back to feature documents; existing tests predate this rule and are mapped by
 content, not by name.
 

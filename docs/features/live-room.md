@@ -40,6 +40,25 @@ deadline, receipt, thứ tự đúng và score; Angular chỉ hiển thị autho
 - Host không trả lời; host thấy **Chốt câu & công bố**.
 - `correctOption` là `null`, không hiển thị điểm delta riêng tư trước reveal.
 
+## Submit answer
+
+Capability bên trong màn hình này, không phải route mới; implementation đã có, phạm vi
+verification ghi trong [testing](../development/testing.md).
+
+- ANSWER-01: Player đang active chọn một option trong QUESTION hiện tại.
+- ANSWER-04: Khi kết quả chưa rõ, retry dùng nguyên option/round/commandId ban đầu. Round
+  mới xóa pending UI đã lỗi thời; receipt đã chấp nhận vẫn còn ở server.
+- ANSWER-06: Reconnect chỉ làm mới state, không bao giờ tự gửi answer.
+- ANSWER-07: Timeout mạng, lỗi 5xx và 408/429 giữ pending; lỗi validation/quyền terminal
+  xóa pending. Reload trang làm mất bộ nhớ chưa gửi. Backend không trả 429 cho bất kỳ
+  request nào; giữ pending ở 429 là để tương thích với rate limiter hạ tầng nếu có.
+
+Dedupe theo room/round/participant và privacy trước reveal là LIVE-03 và LIVE-04 trong
+[domain rules](../domain/game.md#acceptance-invariants). [REST idempotency](../contracts/rest-api.md#idempotency)
+định nghĩa identity và error; [gameplay](../modules/gameplay.md) sở hữu scoring,
+[realtime](../modules/realtime.md) sở hữu recovery. Browser E2E cho store/template chưa
+được implement.
+
 ## Reveal và finished
 
 - Reveal hiển thị correct option và leaderboard đã công bố.
@@ -62,15 +81,13 @@ deadline, receipt, thứ tự đúng và score; Angular chỉ hiển thị autho
 
 ## Acceptance criteria
 
-- ROOM-01: Concurrent correct answers nhận thứ tự do Redis, không do browser timestamp.
-- ROOM-02: Duplicate answer trả receipt cũ và không cộng score lần hai.
 - ROOM-03: Stale round không tác động round mới.
 - ROOM-04: Reconnect giữ pending command trong memory; reload khôi phục receipt đã chấp
   nhận từ server nhưng không giữ command chưa gửi.
-- ROOM-05: Trong QUESTION không lộ correct option hoặc score delta chưa được phép.
-- ROOM-06: Redis failure không fallback sang PostgreSQL cũ để tiếp tục chấm điểm.
 
-Chi tiết acceptance cho nộp đáp án: [Submit answer](submit-answer.md).
+Thứ tự đúng do server quyết định, dedupe answer, privacy trước reveal và fail-closed khi
+mất Redis là các invariant LIVE-02, LIVE-03, LIVE-04 và LIVE-07 trong
+[domain rules](../domain/game.md#acceptance-invariants).
 
 ## Contracts
 

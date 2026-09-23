@@ -27,3 +27,15 @@ Phase is LOBBY, QUESTION, REVEAL or FINISHED. Every accepted transition appends 
 Expiry skips REVEAL: a room expiring during QUESTION finishes directly and publishes visible scores at that moment. A room expiring in LOBBY finishes with no question. Once FINISHED, no command changes state; a duplicate of an accepted command returns its original result without a new event.
 
 Lua atomicity prevents interleaving but does not provide rollback after runtime errors. Key types, schema and bounds are controlled, and infrastructure/write errors stop the command path. Do not continue or invent receipts after Redis errors. AOF everysec and asynchronous PostgreSQL persistence can lose recent acknowledged work after failures; a complete recovery is not promised.
+
+## Acceptance invariants
+
+Cross-feature invariants with stable IDs. Feature documents and tests reference these IDs instead of restating the rule; duplicates that were folded into them are listed under [retired IDs](../features/README.md#retired-ids).
+
+- LIVE-01: An authenticated owner opens a room from a frozen published quiz; a guest session joins atomically by PIN and nickname. The PIN never grants read or host authorization.
+- LIVE-02: Room phases change only along the [state transitions](#state-transitions); expiry can finish a room from any phase that is not FINISHED and skips REVEAL. Deadline and correct-answer order are server decisions, never browser time.
+- LIVE-03: Accepted answer effects occur once per participant and round: resubmitting the same option returns the original acceptance, a different option is rejected without a new score or event, concurrent correct answers receive distinct orders, and wrong answers consume only the attempt.
+- LIVE-04: While a question is open, no response exposes the correct option, unrevealed points or rank; acceptance itself does not disclose correctness or points before reveal.
+- LIVE-05: REST mutates; WebSocket and polling reconcile complete privacy-filtered state. Losing notifications never alters an accepted result.
+- LIVE-06: The archive applies events in order with SQL deduplication before ACK; replay or worker retry never duplicates a participant, answer or score in PostgreSQL.
+- LIVE-07: Lost or corrupt Redis state fails closed; scoring never falls back to incomplete history or stale SQL projections.

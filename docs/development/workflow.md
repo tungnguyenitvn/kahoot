@@ -6,7 +6,7 @@
 
 Read root/nested AGENTS, relevant feature, module, contract and tests. Architecture
 is the navigation map. Do not require every feature document for every task.
-For answer retry: domain + live-room/submit-answer + gameplay/realtime + receipt
+For answer retry: domain + live-room + gameplay/realtime + receipt
 contract + store/Lua tests. Login/catalog content is not required unless impacted.
 
 ## Change lifecycle

@@ -33,8 +33,9 @@ a screen may contain several features.
 - A contradiction is a defect to review, never permission to silently rewrite the
   requirement to match a bug. Accepted contract-level deviations are listed in the
   [contracts index](contracts/README.md#known-deviations) until code changes.
-- Acceptance criteria carry stable IDs (LIVE-01, ANSWER-02, ROOM-03 ...). Tests,
-  issues and PRs reference IDs, not paraphrased criteria.
+- Acceptance criteria carry stable IDs (LIVE-03, ROOM-03, ANSWER-04 ...); one behavior
+  has one ID and retired IDs are never reused. Tests, issues and PRs reference IDs,
+  not paraphrased criteria.
 
 For a change, record Draft → Accepted → Implemented → Verified in the issue/PR.
 Verification includes commands, environment and revision/artifact. Do not label
