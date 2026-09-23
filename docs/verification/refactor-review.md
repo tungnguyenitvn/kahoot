@@ -1,5 +1,8 @@
 # Refactor review and verification
 
+Status: historical record, immutable. The current result per gate lives in
+[README.md](README.md) ([ADR 0005](../adr/0005-evidence-location.md)).
+
 Date: 2026-09-23. Artifact: kahoot-sample.zip, documentation/runtime refactor (successor to v8). Scope: single-instance sample; documentation boundaries, build/API
 corrections, bounded realtime dispatch, retry repair and connection lifecycle.
 This record identifies the delivered refactor artifact, not a production certification.

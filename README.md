@@ -32,8 +32,8 @@ Các lệnh offline không kiểm tra Spring, Redis, PostgreSQL, browser hay Web
 Bắt đầu tại [bản đồ tài liệu](docs/README.md). Architecture chỉ giữ cấu trúc chung;
 module design chứa runtime/failure paths; feature và contracts có trách nhiệm riêng.
 [Workflow](docs/development/workflow.md) và AGENTS.md quy định context, scope và
-Definition of Done cho người và AI. [Verification](docs/verification/refactor-review.md)
-phân biệt kiểm tra đã chạy với những gate còn thiếu.
+Definition of Done cho người và AI. [Verification status](docs/verification/README.md)
+ghi kết quả mới nhất của từng gate kèm revision và môi trường.
 
 ## Thiết kế
 

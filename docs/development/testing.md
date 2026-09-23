@@ -11,8 +11,8 @@
 | Backend integration | scripts/test | Real HTTP/cookies/WS/Redis/SQL behavior in isolated services |
 | Full gate | scripts/verify | Documentation check, backend tests/package, Angular tests/build |
 
-Read [verification record](../verification/refactor-review.md) for actual executed
-results. Never infer pass from the presence or name of a test.
+Read the [verification status](../verification/README.md) for the latest executed
+result per gate. Never infer pass from the presence or name of a test.
 
 ## Traceability
 
