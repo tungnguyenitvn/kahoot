@@ -88,7 +88,8 @@ check as if it were the full one.
 - One coherent change per commit; do not mix a refactor with a behavior change. The
   body says why, and names the acceptance IDs and the evidence when they matter.
 - `[skip ci]` is reserved for commits that only rewrite the verification status after
-  a run; never tag such a commit (see delivery.md).
+  a run; never tag such a commit (see delivery.md). GitHub matches the marker anywhere
+  in the message, including the body, so do not mention it in prose.
 - Commits written with an AI agent carry a `Co-Authored-By` trailer for the agent.
 
 ## 7. Open the pull request
