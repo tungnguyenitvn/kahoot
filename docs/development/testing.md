@@ -29,6 +29,7 @@ COMMAND_LIMIT capacity) map to the [acceptance scenarios](../architecture/qualit
 | LOGIN-02 | NOT COVERED: Angular route guard needs browser E2E | none |
 | LOGIN-03 | GameIntegrationTest#realCookiesCsrfAuthorizationReconnectAndArchiveReplay (logout returns 204, next host request 401) | scripts/test |
 | LOGIN-04 | NOT COVERED: login form state needs browser E2E | none |
+| LOGIN-05 | frontend/tests/login-template.test.mjs ("LOGIN-05 login template embeds no demo credentials") | node --test |
 | JOIN-01 | NOT COVERED: form validation needs browser E2E | none |
 | JOIN-02 | GameIntegrationTest#deadlineMembershipAndNameChecksDoNotDependOnPostgres; scripts/test-room.lua "membership, host authority, revoked access and name uniqueness" | scripts/test, Lua smoke |
 | JOIN-03 | GameIntegrationTest#realCookiesCsrfAuthorizationReconnectAndArchiveReplay (snapshot after answer returns the session's receipt) | scripts/test |

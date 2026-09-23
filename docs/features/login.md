@@ -37,6 +37,8 @@ không cần login để tham gia game.
 - `Auth.ready()` phải có thể chạy lại sau reload để khôi phục identity.
 - Host guard không thay thế authorization ở backend; mọi catalog/history command vẫn
   kiểm tra role server-side.
+- Màn hình không hiển thị credential demo; tài khoản seed chỉ được mô tả trong README
+  và `.env.example`.
 
 ## Acceptance criteria
 
@@ -44,6 +46,7 @@ không cần login để tham gia game.
 - LOGIN-02: Guest truy cập `/host` bị redirect về `/login`.
 - LOGIN-03: Logout trả `204`, xóa session và làm mất quyền host ở request tiếp theo.
 - LOGIN-04: Login lỗi không làm mất route hoặc dữ liệu nhập ngoài password.
+- LOGIN-05: Template login không nhúng credential demo.
 
 ## Contracts
 

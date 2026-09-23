@@ -45,7 +45,8 @@ No edit/delete published quiz API exists.
 | POST /rooms/{id}/next | {commandId,roundId} | Owner; 200 RoomSnapshot |
 | POST /rooms/{id}/kick | {commandId,participantId,roundId?} | Owner; 200 RoomSnapshot |
 
-PIN is a six-digit string; trimmed name length 1..24; option is integer 0..3.
+PIN is a six-digit string; name is 1..24 characters as sent, validated before trimming
+(a blank name is rejected); option is integer 0..3.
 Entity, round and command IDs are UUID strings. The command result is not a
 guarantee that any socket received notification or that SQL archive committed.
 Snapshot/receipt fields: [room-state](room-state.md).
@@ -86,7 +87,7 @@ may use framework errors; clients must tolerate a missing code.
 
 | HTTP | Codes / handling |
 |---|---|
-| 400 | INVALID_REQUEST, INVALID_NAME, INVALID_OPTION, UNKNOWN_COMMAND: fix input |
+| 400 | INVALID_REQUEST, INVALID_OPTION: fix input. INVALID_NAME and UNKNOWN_COMMAND exist as defensive service/Lua codes but are unreachable over HTTP: bean validation rejects the name first and the action path pattern rejects unknown commands |
 | 401 | SESSION_REQUIRED, INVALID_CREDENTIALS: restore/authenticate session |
 | 403 | ACCESS_DENIED, CSRF_REQUIRED, LOGIN_REQUIRED, HOST_REQUIRED, ROOM_ACCESS_DENIED, MEMBERSHIP_REVOKED |
 | 404 | ROOM_NOT_FOUND, QUIZ_NOT_FOUND, PLAYER_NOT_FOUND |

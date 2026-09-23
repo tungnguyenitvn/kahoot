@@ -7,8 +7,7 @@ import { Auth, errorMessage } from './api';
     <label>Email<input [formField]="fields.username" type="email" autocomplete="username"></label>
     <label>Mật khẩu<input [formField]="fields.password" type="password" autocomplete="current-password"></label>
     <button class="primary" [disabled]="busy() || fields().invalid()">{{busy() ? 'Đang đăng nhập…' : 'Đăng nhập'}}</button>
-    @if(error()) { <p class="alert" role="alert">{{error()}}</p> }
-    <p class="muted">Tài khoản demo mặc định: host@example.test / local-quiz-only</p></form>` })
+    @if(error()) { <p class="alert" role="alert">{{error()}}</p> }</form>` })
 export class Login {
   private readonly auth = inject(Auth); private readonly router = inject(Router);
   readonly model = signal({username: '', password: ''}); readonly fields = form(this.model, p => { required(p.username); required(p.password); });

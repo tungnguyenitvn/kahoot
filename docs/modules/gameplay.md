@@ -52,6 +52,27 @@ the original receipt even after a round transition; conflicting option fails.
 Host controls have a separate command ledger and fingerprint. See the
 [idempotency table](../contracts/rest-api.md#idempotency).
 
+## Answer sequence
+
+~~~mermaid
+sequenceDiagram
+  participant B as Browser (RoomStore)
+  participant C as RoomController
+  participant S as RoomService
+  participant R as Redis (room.lua)
+  participant H as RoomWebSocketHub
+  B->>C: POST /api/rooms/{id}/answers {roundId, option, commandId}
+  C->>S: answer(identity, roundId, option, commandId)
+  S->>R: EVAL answer: membership, existing receipt, phase/round/deadline, order and points, HSET + ZINCRBY + XADD
+  R-->>S: public receipt, or {status, code}
+  S->>H: broadcast(roomId) marks connections dirty, nothing awaited
+  S-->>B: 200 AnswerReceipt, or the error envelope
+  H-->>B: STATE snapshot later, coalesced and best effort
+~~~
+
+The receipt never waits for archive or notification work; the browser refreshes its
+snapshot after the receipt and applies STATE through the version guard.
+
 ## Notification and timer
 
 A successful command marks clients dirty; no DB archive or WS send is awaited.
