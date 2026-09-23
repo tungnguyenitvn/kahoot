@@ -14,7 +14,8 @@ change does.
 | Offline policy/lifecycle | node --test frontend/tests/*.test.mjs (frontend-test stage) | PASS 14/14 | 51a6880 | node:24.15.0 container | 2026-09-23 | local scripts/verify |
 | Angular build | npm run build (frontend-test stage) | PASS, application bundle generated | 51a6880 | node:24.15.0 container, Angular 22 | 2026-09-23 | local scripts/verify |
 | Full gate | ./scripts/verify | PASS, all stages above | 51a6880 | macOS host, Docker Desktop 29.7.2 | 2026-09-23 | local |
-| CI (GitHub Actions) | .github/workflows/ci.yml | NOT RUN: no remote configured | none | none | none | none |
+| Release stack smoke | scripts/smoke-release | PASS: SPA served, /api proxied, CSRF enforced through nginx | 8ce5941 | macOS host, Docker Desktop 29.7.2, images built from Dockerfile.release | 2026-09-23 | local |
+| CI (GitHub Actions) | .github/workflows/ci.yml | BLOCKED: run 35887767601 ended in startup_failure before any job started; a minimal echo-only probe workflow on a temporary branch failed the same way (run 35888361714), so the cause is account-side (Actions on a private repository, billing or spending limit), not the workflow files, which parse locally | 8ce5941 | github.com, private repository | 2026-09-23 | https://github.com/tungnguyenitvn/kahoot/actions/runs/35887767601 |
 
 Historical records: [refactor-review.md](refactor-review.md) covers the documentation
 refactor and the contract fixes of 2026-09-23.
