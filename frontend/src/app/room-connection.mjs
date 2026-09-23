@@ -61,10 +61,13 @@ export class RoomConnection {
       } catch (error) { this.io.onError(error); void this.refresh(); }
     };
     socket.onerror = () => { if (current()) this.io.onConnected(false); };
-    socket.onclose = () => {
+    socket.onclose = event => {
       if (!current()) return;
       this.socket = undefined;
       this.io.onConnected(false);
+      // 1012: the server refused this connection for capacity. Do not race it with a timer;
+      // the next REST reconciliation calls connect() again (ROOM-07).
+      if (event && event.code === 1012) return;
       this.scheduleRetry();
     };
   }

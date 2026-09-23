@@ -58,6 +58,7 @@ class RoomWebSocketHubTest {
         finally {hub.close();}
     }
     @Test @SuppressWarnings("unchecked")
+    @DisplayName("ROOM-07 registration refuses room capacity before scheduling work and closes with 1012")
     void registrationRefusesRoomCapacityBeforeSchedulingWork() throws Exception {
         var rooms=mock(RedisRooms.class);SessionRepository<MapSession> sessions=mock(SessionRepository.class);
         var hub=new RoomWebSocketHub(rooms,new ObjectMapper(),sessions,()->1000L);

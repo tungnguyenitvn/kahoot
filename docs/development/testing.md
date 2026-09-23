@@ -40,6 +40,7 @@ COMMAND_LIMIT capacity) map to the [acceptance scenarios](../architecture/qualit
 | STUDIO-05 | GameIntegrationTest#realCookiesCsrfAuthorizationReconnectAndArchiveReplay (same commandId returns the same room); RoomServiceTest#sqlFailureAfterInitMustNotRemoveLiveRegistrationAndRetryRepairsIt; GameIntegrationTest#activeRegistrationRepairsLiveStateButNeverResurrectsFinishedRoom | scripts/test |
 | ROOM-03 | GameIntegrationTest#receiptSurvivesRoundTransitionAndConflictingAnswerIsRejected; scripts/test-room.lua "retry of previous round cannot score or advance the new round" | scripts/test, Lua smoke |
 | ROOM-04 | NOT COVERED: RoomStore pending-command memory has no test harness | none |
+| ROOM-07 | frontend/tests/room-connection.test.mjs ("ROOM-07 capacity refusal (close 1012) schedules no retry timer ..."); RoomWebSocketHubTest#registrationRefusesRoomCapacityBeforeSchedulingWork (server side of the refusal) | node --test, scripts/test |
 | ANSWER-01 | NOT COVERED: template interaction needs browser E2E | none |
 | ANSWER-04 | NOT COVERED: RoomStore retry policy has no test harness | none |
 | ANSWER-06 | frontend/tests/room-connection.test.mjs ("socket open sends only SYNC ...", "REVOKED rejects late HTTP result ...") | node --test |

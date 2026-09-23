@@ -74,7 +74,8 @@ Dedupe theo room/round/participant và privacy trước reveal là LIVE-03 và L
 1. STATE chỉ được apply nếu đúng room và version không cũ.
 2. Lỗi REST ban đầu vẫn giữ polling để phục hồi; socket close hiển thị **Đang nối lại**,
    reconnect với backoff có giới hạn và vẫn poll REST định kỳ. Giá trị nằm trong
-   [bảng limits](../architecture/quality-and-risks.md#limits-and-timings).
+   [bảng limits](../architecture/quality-and-risks.md#limits-and-timings). Bị từ chối
+   vì hết dung lượng thì chỉ thử lại ở lần poll kế tiếp (ROOM-07).
 3. HTTP response và STATE có thể đến khác thứ tự; version guard hợp nhất an toàn.
 4. Pending answer giữ nguyên tới khi nhận receipt hoặc terminal error.
 5. `STALE_ROUND`, `DEADLINE_PASSED`, `ALREADY_ANSWERED` yêu cầu reconcile snapshot.
@@ -85,6 +86,8 @@ Dedupe theo room/round/participant và privacy trước reveal là LIVE-03 và L
 - ROOM-03: Stale round không tác động round mới.
 - ROOM-04: Reconnect giữ pending command trong memory; reload khôi phục receipt đã chấp
   nhận từ server nhưng không giữ command chưa gửi.
+- ROOM-07: Khi server đóng socket với close code 1012 vì hết dung lượng, client không
+  đặt timer reconnect; lần poll REST kế tiếp mới mở lại socket.
 
 Thứ tự đúng do server quyết định, dedupe answer, privacy trước reveal và fail-closed khi
 mất Redis là các invariant LIVE-02, LIVE-03, LIVE-04 và LIVE-07 trong

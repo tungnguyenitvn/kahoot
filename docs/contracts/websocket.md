@@ -18,6 +18,18 @@ Unsupported message type returns ERROR READ_ONLY_CHANNEL, never mutation.
 Malformed JSON returns INVALID_MESSAGE; oversized input (>1024 text characters)
 closes with 1009. This is an application guard, not a complete ingress flood limiter.
 
+## Close codes
+
+| Code | Meaning | Client behavior |
+|---|---|---|
+| 1001 GOING_AWAY | Server shutting down | Reconnect with backoff |
+| 1003 NOT_ACCEPTABLE | A send to this client failed, so the server dropped it | Reconnect with backoff |
+| 1008 POLICY_VIOLATION | Sent right after a REVOKED message | Stop; a new route/session flow is required |
+| 1009 TOO_BIG | Inbound text exceeded the limit above | Reconnect with backoff and fix the sender |
+| 1012 SERVICE_RESTARTED | Registration refused: per-process or per-room capacity, or the hub is stopping | No retry timer; the next REST reconciliation reopens the socket (ROOM-07) |
+
+Handshake rejections happen before the upgrade and use HTTP status codes, not close codes.
+
 ## Server messages
 
 ~~~json

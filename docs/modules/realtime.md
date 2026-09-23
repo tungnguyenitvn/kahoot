@@ -32,6 +32,9 @@ RoomStore owns signals and commands.
 - Start: begin REST reconciliation even if the first request fails transiently.
 - First valid snapshot: open socket. WS open sends SYNC.
 - Close: reconnect with bounded exponential delay and jitter.
+- Close with code 1012 (registration refused for capacity): no retry timer; the next
+  REST reconciliation reopens the socket (ROOM-07). Close codes are listed in the
+  [WebSocket contract](../contracts/websocket.md#close-codes).
 - Poll: full REST snapshot on a fixed interval even when WS is healthy.
 - 401/403/404 or REVOKED: stop socket/retry/poll; ignore late completions.
 - Dispose/route change: detach handlers, cancel timers, reject old-room updates.

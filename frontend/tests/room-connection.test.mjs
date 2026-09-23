@@ -66,6 +66,13 @@ test('synchronous socket creation failure uses retry without stopping REST recon
   const [id,job]=[...f.timeouts][0];f.timeouts.delete(id);job.fn();assert.equal(f.sockets.length,1);
   f.connection.stop();
 });
+test('ROOM-07 capacity refusal (close 1012) schedules no retry timer; the next reconciliation reopens the socket',async()=>{
+  const f=fixture();await f.connection.start();const s=f.sockets[0];s.onopen();
+  s.onclose({code:1012});
+  assert.equal(f.timeouts.size,0);assert.equal(f.intervals.size,1);assert.equal(f.sockets.length,1);
+  await [...f.intervals.values()][0].fn();
+  assert.equal(f.sockets.length,2);f.connection.stop();
+});
 test('backoff grows to its cap and never creates duplicate retry timers',async()=>{
   const f=fixture();await f.connection.start();
   for(let i=0;i<12;i++) {
