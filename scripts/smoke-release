@@ -30,4 +30,8 @@ curl -fsS "$base/" | grep -qi '<app-root' || { echo "SPA index not served"; exit
 curl -fsS "$base/api/auth/csrf" | grep -q '"token"' || { echo "API proxy failed"; exit 1; }
 code=$(curl -s -o /dev/null -w '%{http_code}' -X POST "$base/api/rooms/join" -H 'Content-Type: application/json' -d '{}')
 [ "$code" = "403" ] || { echo "expected CSRF rejection 403 through the proxy, got $code"; exit 1; }
-printf 'release smoke OK: %s serves the SPA, proxies /api and enforces CSRF\n' "$base"
+# A reload on a deep route must still load the bundle: the SPA fallback carries <base href="/"> and the
+# bundle is served as JavaScript, never as the index fallback (ROOM-04).
+curl -fsS "$base/room/smoke-deep-link" | grep -q '<base href="/">' || { echo "deep-link index lacks <base href=\"/\">"; exit 1; }
+curl -fsSI "$base/main.js" | grep -qi 'content-type: .*javascript' || { echo "main.js is not served as JavaScript"; exit 1; }
+printf 'release smoke OK: %s serves the SPA and deep links, proxies /api and enforces CSRF\n' "$base"
