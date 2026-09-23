@@ -1,0 +1,39 @@
+server:
+  port: 8080
+  servlet:
+    session:
+      cookie:
+        http-only: true
+        secure: ${COOKIE_SECURE:false}
+        same-site: lax
+spring:
+  threads:
+    virtual:
+      enabled: true
+  application:
+    name: quiz-room
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:quiz}
+    username: ${DB_USER:quiz}
+    password: ${DB_PASSWORD:quiz-local}
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      timeout: 2s
+  session:
+    timeout: 4h
+    redis:
+      namespace: quiz:http-session
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+app:
+  websocket:
+    allowed-origins: ${WS_ALLOWED_ORIGINS:http://localhost:4200,http://127.0.0.1:4200}
+  demo:
+    enabled: ${DEMO_ENABLED:true}
+    username: ${DEMO_USERNAME:host@example.test}
+    password: ${DEMO_PASSWORD:local-quiz-only}

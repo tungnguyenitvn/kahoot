@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+set -euo pipefail
+cd "$(dirname "$0")/.."
+trap 'docker compose -f compose.test.yaml down --remove-orphans' EXIT
+docker compose -f compose.test.yaml config --quiet
+docker compose -f compose.test.yaml run --build --rm backend-test
+docker compose -f compose.test.yaml run --build --rm frontend-test

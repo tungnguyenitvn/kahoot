@@ -1,0 +1,36 @@
+name: quiz-room-check
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment: {POSTGRES_DB: quiz_test, POSTGRES_USER: quiz, POSTGRES_PASSWORD: quiz-test}
+    tmpfs: [/var/lib/postgresql/data]
+    healthcheck:
+      test: [CMD-SHELL, "pg_isready -U quiz -d quiz_test"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+  redis:
+    image: redis:7.4-alpine
+    command: [redis-server, --save, "", --appendonly, "no", --maxmemory-policy, noeviction]
+    healthcheck:
+      test: [CMD, redis-cli, ping]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+  backend-test:
+    build: ./backend
+    init: true
+    environment: {DB_HOST: postgres, DB_NAME: quiz_test, DB_PASSWORD: quiz-test, REDIS_HOST: redis, TEST_ENV: "1", DEMO_ENABLED: "true"}
+    volumes: [./backend:/app, gradle-cache:/root/.gradle]
+    command: [clean, test, integrationTest, bootJar, --no-daemon]
+    depends_on:
+      postgres: {condition: service_healthy}
+      redis: {condition: service_healthy}
+  frontend-test:
+    build: ./frontend
+    init: true
+    volumes: [./frontend:/app, frontend-modules:/app/node_modules, ./:/repo:ro]
+    command: [sh, -c, "node /repo/scripts/check-docs.mjs && npm test && npm run build"]
+volumes:
+  gradle-cache:
+  frontend-modules:
