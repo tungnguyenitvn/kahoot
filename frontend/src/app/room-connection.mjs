@@ -3,7 +3,16 @@ import { isRoomSnapshot } from './room-state.mjs';
 // Route-scoped transport. No mutation retries and no framework/browser dependency in tests.
 export class RoomConnection {
   constructor(options) {
-    this.io = { setInterval, clearInterval, setTimeout, clearTimeout, random: Math.random, ...options };
+    // Browser timer functions must be called without an object receiver: `this.io.setInterval(...)` on a
+    // bare `window.setInterval` reference throws "Illegal invocation" in browsers, so wrap the globals.
+    const timers = {
+      setInterval: (fn, ms) => setInterval(fn, ms),
+      clearInterval: id => clearInterval(id),
+      setTimeout: (fn, ms) => setTimeout(fn, ms),
+      clearTimeout: id => clearTimeout(id),
+      random: () => Math.random()
+    };
+    this.io = { ...timers, ...options };
     this.stopped = false;
     this.delay = 500;
   }
