@@ -8,11 +8,12 @@ change does.
 
 | Gate | Command | Latest result | Revision | Environment | Date | Run |
 |---|---|---|---|---|---|---|
-| Documentation lint | node scripts/check-docs.mjs | PASS, rules L1 to L4 in fail mode with 0 warnings | 37d0d39 | macOS, Node 22.22.3 | 2026-09-23 | local |
-| Offline policy/lifecycle | node --test frontend/tests/*.test.mjs | PASS 12/12 | 4763892 | macOS, Node 22.22.3 | 2026-09-23 | local |
-| Lua smoke | scripts/test-room.lua | PASS 10/10 | 4763892 | Lua 5.4.7 in a redis:7.4-alpine container | 2026-09-23 | local |
-| Backend unit + integration | ./scripts/test | PASS unit 5/5, integration 10/10 | 4763892 | Docker Desktop 29.7.2, eclipse-temurin:24-jdk, postgres:17-alpine, redis:7.4-alpine | 2026-09-23 | local |
-| Full gate | ./scripts/verify | PASS backend, check-docs, 12 Node tests, ng build | 62b9fe4 | Docker Desktop 29.7.2, node:24.15.0 | 2026-09-23 | local |
+| Lua smoke | scripts/test-room.lua (lua-smoke stage) | PASS 10/10 | 51a6880 | Alpine 3.21 + Lua 5.4 container | 2026-09-23 | local scripts/verify |
+| Backend unit + integration | backend-test stage (clean test integrationTest bootJar) | PASS unit 5/5, integration 10/10, bootJar built | 51a6880 | Docker Desktop 29.7.2, eclipse-temurin:24-jdk, postgres:17-alpine, redis:7.4-alpine | 2026-09-23 | local scripts/verify |
+| Documentation lint | node scripts/check-docs.mjs (frontend-test stage) | PASS 44 documents, 175 links; rules L1 to L5 in fail mode, 0 warnings | 51a6880 | node:24.15.0 container | 2026-09-23 | local scripts/verify |
+| Offline policy/lifecycle | node --test frontend/tests/*.test.mjs (frontend-test stage) | PASS 14/14 | 51a6880 | node:24.15.0 container | 2026-09-23 | local scripts/verify |
+| Angular build | npm run build (frontend-test stage) | PASS, application bundle generated | 51a6880 | node:24.15.0 container, Angular 22 | 2026-09-23 | local scripts/verify |
+| Full gate | ./scripts/verify | PASS, all stages above | 51a6880 | macOS host, Docker Desktop 29.7.2 | 2026-09-23 | local |
 | CI (GitHub Actions) | .github/workflows/ci.yml | NOT RUN: no remote configured | none | none | none | none |
 
 Historical records: [refactor-review.md](refactor-review.md) covers the documentation
