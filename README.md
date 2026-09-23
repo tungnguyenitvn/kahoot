@@ -48,6 +48,11 @@ Stack release chưa có TLS; đặt TLS terminator phía trước và chỉnh `P
 `COOKIE_SECURE` theo [deployment](docs/architecture/deployment.md). Quy trình cắt
 release, hotfix và required checks: [delivery](docs/development/delivery.md).
 
+## Đóng góp
+
+Quy trình từng bước cho developer, từ nhận issue, đặt tên nhánh, chạy gate local, đến
+mở PR đúng template và review: [CONTRIBUTING](CONTRIBUTING.md).
+
 ## Tài liệu và workflow AI
 
 Bắt đầu tại [bản đồ tài liệu](docs/README.md). Architecture chỉ giữ cấu trúc chung;
