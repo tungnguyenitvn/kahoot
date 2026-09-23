@@ -46,7 +46,7 @@ REVOKED uses code, not reason: SESSION_EXPIRED, ROOM_ACCESS_DENIED or ROOM_NOT_F
 
 Delivery is best effort, coalesced, potentially duplicated/out-of-order. Do not
 treat version gaps as missing mutations: snapshots are complete.
-No score or accepted-answer decision depends on WS delivery.
+No score or accepted-answer decision depends on WS delivery (LIVE-05).
 
 ## Client obligations
 

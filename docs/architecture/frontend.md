@@ -41,9 +41,8 @@ same-room/version guard. Answer POST returns a receipt, then the store refreshes
 Version gaps are valid for full snapshots; no event replay is required.
 
 Initial transient failure keeps reconciliation active. Access failure is terminal.
-Reconnect never resubmits mutations. [Realtime design](../modules/realtime.md)
-owns exact lifecycle/error behavior; [contracts](../contracts/websocket.md) own
-messages and privacy.
+[Realtime design](../modules/realtime.md) owns exact lifecycle/error behavior;
+[contracts](../contracts/websocket.md) own messages and privacy.
 
 ## Verification
 

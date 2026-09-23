@@ -6,9 +6,9 @@
 the eight same-room keys listed in the [Redis contract](../contracts/redis-room.md).
 Lua owns membership, phase, deadline, accepted answers, score and event version.
 
-Correct order is order of accepted correct commands at Redis, not browser click
-time or HTTP arrival time. Snapshot filtering happens before data leaves Redis.
-The visible-score ZSET advances on reveal/expiry; browser ranks those visible scores.
+Correct order is the acceptance order at Redis (LIVE-02 in the domain rules).
+Snapshot filtering happens before data leaves Redis. The visible-score ZSET advances
+on reveal/expiry; browser ranks those visible scores.
 
 ## Provisioning across two stores
 

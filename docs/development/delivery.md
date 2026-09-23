@@ -31,10 +31,13 @@ after a run carries `[skip ci]` so it does not start another run.
 ## Required checks before a merge
 
 Both `ci` jobs, `verify gate` and `release images from verified artifacts`, must be
-green and a reviewer must approve. Until branch protection is available for this
-repository (see the [verification status](../verification/README.md)) this is a
-convention from CONTRIBUTING, not an enforced rule; the author verifies the checks on
-the pull request page before merging.
+green and a reviewer must approve. Whether GitHub enforces this is recorded in the
+[verification status](../verification/README.md); until a ruleset exists, the author
+verifies both checks on the pull request page before merging. The intended ruleset on
+`main` (Settings, Rules, Rulesets) requires a pull request and those two status checks,
+blocks force pushes and deletion, and keeps repository admins on the bypass list so a
+broken pipeline can never lock the owner out; a review requirement is added once the
+project has more than one maintainer.
 
 ## Cutting a release
 

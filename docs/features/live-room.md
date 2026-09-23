@@ -10,7 +10,6 @@ deadline, receipt, thứ tự đúng và score; Angular chỉ hiển thị autho
 - Route: `/room/:id`, dùng chung cho host và player.
 - `RoomStore` ủy quyền `RoomConnection` gọi `GET /api/rooms/{id}` trước khi mở WebSocket.
 - WebSocket `/ws/rooms/{id}` chỉ nhận `SYNC` và `PING`; mọi mutation dùng REST.
-- Snapshot có `version`; state cũ hơn không được ghi đè state mới hơn.
 
 ## Shared layout
 
@@ -20,7 +19,8 @@ deadline, receipt, thứ tự đúng và score; Angular chỉ hiển thị autho
 - Player list hiển thị active/removed và answered state.
 - Leaderboard hiển thị số hàng theo [bảng limits](../architecture/quality-and-risks.md#limits-and-timings),
   cùng điểm dùng competition rank.
-- Client không tự tính score, correct order hoặc deadline acceptance.
+- Client không tự quyết định score, thứ tự đúng hay deadline; đó là LIVE-02 trong
+  [domain rules](../domain/game.md#acceptance-invariants).
 
 ## Lobby
 
@@ -71,15 +71,15 @@ Dedupe theo room/round/participant và privacy trước reveal là LIVE-03 và L
 
 ## Realtime, reconnect và error
 
-1. STATE chỉ được apply nếu đúng room và version không cũ.
+1. HTTP response và STATE có thể đến khác thứ tự; chỉ apply snapshot cùng room và
+   version không cũ hơn theo [room-state](../contracts/room-state.md#merge-and-privacy).
 2. Lỗi REST ban đầu vẫn giữ polling để phục hồi; socket close hiển thị **Đang nối lại**,
    reconnect với backoff có giới hạn và vẫn poll REST định kỳ. Giá trị nằm trong
    [bảng limits](../architecture/quality-and-risks.md#limits-and-timings). Bị từ chối
    vì hết dung lượng thì chỉ thử lại ở lần poll kế tiếp (ROOM-07).
-3. HTTP response và STATE có thể đến khác thứ tự; version guard hợp nhất an toàn.
-4. Pending answer giữ nguyên tới khi nhận receipt hoặc terminal error.
-5. `STALE_ROUND`, `DEADLINE_PASSED`, `ALREADY_ANSWERED` yêu cầu reconcile snapshot.
-6. `REVOKED`, 401, 403 hoặc 404 dừng reconnect.
+3. Pending answer giữ nguyên tới khi nhận receipt hoặc terminal error.
+4. `STALE_ROUND`, `DEADLINE_PASSED`, `ALREADY_ANSWERED` yêu cầu reconcile snapshot.
+5. `REVOKED`, 401, 403 hoặc 404 dừng reconnect.
 
 ## Acceptance criteria
 

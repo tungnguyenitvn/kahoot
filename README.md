@@ -63,4 +63,4 @@ ghi kết quả mới nhất của từng gate kèm revision và môi trường.
 - [Contracts index](docs/contracts/README.md) · [REST API](docs/contracts/rest-api.md) · [Redis room](docs/contracts/redis-room.md) · [WebSocket](docs/contracts/websocket.md) · [Realtime delivery](docs/modules/realtime.md)
 - [Kiểm thử và traceability](docs/development/testing.md) · [vận hành](docs/operations/runbook.md)
 
-Đây là sample một backend instance. Redis Lua đảm bảo mỗi command trong một phòng là nguyên tử tại Redis; WebSocket chỉ phát snapshot sau khi command thành công, không quyết định điểm hay thứ tự. Stream được worker ghi tuần tự sang PostgreSQL. Sample không tuyên bố HA, đa vùng, hay durability tuyệt đối khi Redis mất dữ liệu.
+Đây là sample một backend instance: các invariant về nguyên tử, thứ tự và privacy nằm trong [domain rules](docs/domain/game.md#acceptance-invariants), phạm vi và non-goal trong [product scope](docs/product/scope.md).

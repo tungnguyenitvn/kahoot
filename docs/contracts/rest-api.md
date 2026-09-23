@@ -29,7 +29,7 @@ Security filter errors: 401 SESSION_REQUIRED; 403 CSRF_REQUIRED or ACCESS_DENIED
 Quiz = {id,title,status,questions}. Each question has text, options[4],
 correctOption (0..3), seconds (5..120). Limits: title 1..120 characters;
 1..20 questions; question text 1..300; each option 1..120.
-POST draft has no server idempotency key; inspect catalog after ambiguous timeout.
+Draft creation has no idempotency key (see [idempotency](#idempotency)).
 No edit/delete published quiz API exists.
 
 ## Room commands
