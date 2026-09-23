@@ -4,26 +4,28 @@ Sample end-to-end dùng **Java 24 + Spring Boot 4.1.1 + Gradle 8.14.3 + Angular 
 
 ## Chạy bằng Docker
 
-Cần Docker Compose v2. Sao chép `.env.example` thành `.env` nếu muốn đổi tài khoản seed, sau đó:
+Cần Docker Engine, Docker Compose v2 và Bash (WSL trên Windows). Sao chép `.env.example` thành `.env` nếu muốn đổi tài khoản seed, sau đó:
 
 ```bash
-./scripts/bootstrap             # build image; lần đầu chạy compose tạo Gradle wrapper thật trong backend/
+./scripts/bootstrap             # build image backend và frontend
 docker compose up               # PostgreSQL, Redis, backend, Angular
 ```
 
-Mở `http://localhost:4200`. Tài khoản host mặc định là `host@example.test` / `local-quiz-only`. Host vào **Host studio**, tạo quiz tối thiểu một câu, xuất bản rồi mở phòng. Người chơi mở tab khác, nhập PIN sáu chữ số và tên. Dừng bằng `Ctrl+C`; dữ liệu dev nằm trong volume Docker.
+Mở `http://localhost:4200`; health endpoint của backend là `http://localhost:8080/actuator/health`. Tài khoản host mặc định là `host@example.test` / `local-quiz-only`. Host vào **Host studio**, tạo quiz tối thiểu một câu, xuất bản rồi mở phòng. Người chơi mở tab khác, nhập PIN sáu chữ số và tên. Dừng bằng `Ctrl+C`; dữ liệu dev nằm trong volume Docker.
 
-Wrapper Gradle được bootstrap trong container từ distribution chính thức rồi lưu vào `backend/` khi backend khởi động, vì archive này không nhúng binary wrapper. Sau lần bootstrap có thể chạy `backend/gradlew` trực tiếp trong image.
+Gradle wrapper (`backend/gradlew`, `backend/gradle/wrapper`) và `frontend/package-lock.json` nằm trong cây nguồn; entrypoint chỉ bootstrap lại wrapper nếu thiếu và dùng `npm ci` khi có lockfile. Chạy công cụ ngoài Docker cần JDK 24, Gradle 8.14.3, Node theo `engines` trong `frontend/package.json` và TypeScript 6.0.x.
 
 ## Kiểm tra
 
 ```bash
 ./scripts/test                 # Redis/PostgreSQL tạm thời + backend unit/integration
-./scripts/verify               # thêm docker compose config và Angular test/build
-texlua scripts/test-room.lua .
+./scripts/verify               # cổng đầy đủ: compose config, backend, check-docs, Angular test/build
+node scripts/check-docs.mjs    # lint tài liệu, chạy được không cần Docker
+node --test frontend/tests/*.test.mjs
+texlua scripts/test-room.lua . # smoke test Lua với Redis double; texlua hoặc Lua 5.3/5.4 bất kỳ
 ```
 
-Lệnh cuối là smoke test Lua chạy offline với Redis double (texlua hoặc bất kỳ Lua 5.3/5.4 nào); nó kiểm tra các invariant cốt lõi nhưng không thay thế Redis thật. `./scripts/verify` là cổng kiểm tra đầy đủ và không dùng volume dữ liệu dev.
+Các lệnh offline không kiểm tra Spring, Redis, PostgreSQL, browser hay WebSocket thật. `./scripts/verify` dùng compose cô lập, không đụng volume dev. Phạm vi từng gate và ma trận acceptance ID → test: [testing](docs/development/testing.md).
 
 ## Tài liệu và workflow AI
 
@@ -37,8 +39,7 @@ phân biệt kiểm tra đã chạy với những gate còn thiếu.
 
 - [Feature index](docs/features/README.md) · [invariant live quiz](docs/domain/game.md#acceptance-invariants) · [quy tắc game](docs/domain/game.md)
 - [Tổng quan kiến trúc](docs/architecture/overview.md) · [Backend architecture](docs/architecture/backend.md) · [Frontend architecture](docs/architecture/frontend.md) · [Redis live state](docs/adr/0002-redis-game-state.md)
-- [Contracts index](docs/contracts/README.md) · [REST API](docs/contracts/rest-api.md) · [Redis room](docs/contracts/redis-room.md) · [WebSocket](docs/contracts/websocket.md)
-- [WebSocket architecture notes](docs/architecture/websocket.md)
-- [Bắt đầu và vận hành](docs/development/getting-started.md) · [kiểm thử](docs/development/testing.md)
+- [Contracts index](docs/contracts/README.md) · [REST API](docs/contracts/rest-api.md) · [Redis room](docs/contracts/redis-room.md) · [WebSocket](docs/contracts/websocket.md) · [Realtime delivery](docs/modules/realtime.md)
+- [Kiểm thử và traceability](docs/development/testing.md) · [vận hành](docs/operations/runbook.md)
 
 Đây là sample một backend instance. Redis Lua đảm bảo mỗi command trong một phòng là nguyên tử tại Redis; WebSocket chỉ phát snapshot sau khi command thành công, không quyết định điểm hay thứ tự. Stream được worker ghi tuần tự sang PostgreSQL. Sample không tuyên bố HA, đa vùng, hay durability tuyệt đối khi Redis mất dữ liệu.

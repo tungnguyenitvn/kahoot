@@ -30,6 +30,18 @@ and re-add a finished room. This is retry repair, not an
 autonomous saga or distributed transaction. An abandoned create before registration
 requires client retry/operator action. PIN loss remains a known limitation.
 
+## Atomicity and storage errors
+
+One Lua invocation is the atomic boundary for a room: authority, phase, deadline,
+duplicate receipt, correct order and the ZSET score are decided in one execution with
+no interleaving. Atomic is not rollback: a runtime error after a write leaves earlier
+writes in place, so the script stays short and validates key types before any write.
+Redis runs with noeviction for a separate reason: under memory pressure it must reject
+writes rather than silently evict room or session keys. A Lua runtime error and a
+rejected write both reach the caller as a storage error, never as a domain result.
+No PostgreSQL call happens on the answer path; SQL transactions belong to
+[archive](archive.md) and catalog only.
+
 ## Answer and retry
 
 Membership check → existing receipt lookup → phase/round/deadline/option check →

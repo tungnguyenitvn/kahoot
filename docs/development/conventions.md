@@ -19,22 +19,14 @@ stay in Lua; SQL transactions apply within PostgreSQL only.
 Keep I/O budgets explicit. Virtual threads are not admission control.
 Separate recoverable timeout from terminal domain error; retain the original
 command/payload when retrying a supported idempotent operation.
-Use Java/Redis clock only as documented; browser timestamps never decide score.
+Clock and ordering rules belong to the [domain](../domain/game.md) (LIVE-02).
 
 ## Frontend
 
 Standalone OnPush pages; signals for owned state, computed for derived data,
 linkedSignal for per-round selection; Signal Forms for local validation.
-RoomStore owns gameplay commands; RoomConnection owns transport. Templates render,
-not manage socket/timer lifecycle. Derived competition rank may be calculated from
-server-visible scores; score allocation remains server-owned.
+Templates render, not manage socket/timer lifecycle; layer ownership is in the
+[frontend architecture](../architecture/frontend.md). Derived competition rank may be
+calculated from server-visible scores; score allocation remains server-owned.
 Runtime network JSON is untrusted even when TypeScript has an interface.
 Dispose subscriptions/timers and ignore late responses after navigation/revocation.
-
-## Changes and evidence
-
-Keep schemas in [contracts](../contracts/README.md), behavior in
-[features](../features/README.md). Follow [workflow](workflow.md).
-Breaking changes require compatibility/migration notes; useful architecture changes
-require an ADR. Test coverage claims belong in [testing](testing.md) and scoped
-verification records.

@@ -23,8 +23,8 @@ flowchart TB
 
 One Lua invocation linearizes a room command: authorization, validation,
 deduplication, score and event append. It is atomic with respect to other commands,
-not a rollback transaction. Scripts on the same Redis instance share execution
-capacity even across rooms.
+not a rollback transaction ([gameplay design](../modules/gameplay.md#atomicity-and-storage-errors)).
+Scripts on the same Redis instance share execution capacity even across rooms.
 
 REST returns command results; WebSocket is best-effort full-state notification.
 Archive consumes room Streams and commits ordered projections before ACK.

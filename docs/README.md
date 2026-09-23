@@ -12,6 +12,11 @@ sample, not a production reference implementation.
 | How does a module work? | [Module index](modules/README.md) | Other modules' internals |
 | What does the user experience? | [Features](features/README.md) | Shared wire schemas |
 | What crosses a boundary? | [Contracts](contracts/README.md) | Architectural rationale |
+| How is the backend structured? | [Backend architecture](architecture/backend.md) | Module algorithms and failure paths |
+| How is the frontend structured? | [Frontend architecture](architecture/frontend.md) | Screen behavior |
+| Where does it run? | [Deployment](architecture/deployment.md) | Recovery steps |
+| Which coding conventions apply? | [Conventions](development/conventions.md) | Architecture rules, schemas |
+| Which gates exist and which acceptance ID has evidence? | [Testing and traceability](development/testing.md) | Executed results |
 | Which game rules and state transitions apply? | [Domain rules](domain/game.md) | Screen behavior, wire shapes |
 | Which numeric limits and timings apply? | [Limits table](architecture/quality-and-risks.md#limits-and-timings) | The same values in other documents |
 | Why this trade-off? | [ADR index](adr/README.md) | Current task progress |
@@ -45,6 +50,5 @@ the whole project verified because one smoke test passes.
 
 English is canonical for architecture, contracts, domain, modules, ADRs,
 development, operations, product and verification documents and for AGENTS files.
-Vietnamese is used for README.md, docs/features and
-docs/development/getting-started.md. Never mix languages inside one document;
+Vietnamese is used for README.md and docs/features. Never mix languages inside one document;
 UI strings, error codes, identifiers and acceptance IDs are quoted verbatim.

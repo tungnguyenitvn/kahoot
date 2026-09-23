@@ -4,7 +4,7 @@ import { fileURLToPath } from 'node:url';
 
 // Documentation lint. Rule modes: 'fail' breaks the gate, 'warn' only prints, 'off' skips.
 // Flip a rule to 'fail' only when the tree is clean for it; docs/development/testing.md lists the rules.
-const MODE = { links: 'fail', wire: 'fail', imports: 'fail', L1: 'warn', L2: 'fail', L3: 'fail', L4: 'off', L5: 'warn' };
+const MODE = { links: 'fail', wire: 'fail', imports: 'fail', L1: 'fail', L2: 'fail', L3: 'fail', L4: 'off', L5: 'warn' };
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const docsRoot = path.join(root, 'docs');

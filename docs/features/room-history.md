@@ -37,5 +37,5 @@ Replay hoặc worker retry không nhân đôi answer/score là invariant LIVE-06
 
 ## Contracts
 
-Xem [REST API](../contracts/rest-api.md), [transactions](../development/transactions.md)
-và [backend archive architecture](../modules/archive.md).
+Xem [REST API](../contracts/rest-api.md), [Redis room contract](../contracts/redis-room.md)
+và [archive design](../modules/archive.md).

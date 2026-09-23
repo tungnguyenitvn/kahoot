@@ -16,6 +16,8 @@ consumer name is single-instance. This is not a global one-second persistence SL
 
 This gives idempotent database effects under at-least-once delivery, not universal
 exactly-once execution. The terminal event can only commit after preceding versions.
+Steps 2 to 4 are one PostgreSQL transaction in ArchiveTransactions.apply; step 6 is one
+Lua script. HTTP responses and WebSocket sends are outside every transaction.
 
 ## Boundaries and limitations
 
