@@ -27,6 +27,24 @@ Only some areas have automated coverage. Browser E2E, slow-network load, Redis
 loss/OOM and full outage/recovery campaigns remain gaps; track them in
 [quality risks](../architecture/quality-and-risks.md).
 
+## Documentation lint
+
+scripts/check-docs.mjs enforces the documentation rules from [docs/README.md](../README.md).
+Each rule runs in mode `fail`, `warn` or `off`; a rule is switched to `fail` only once
+the tree is clean for it, so the gate never blocks on pre-existing debt.
+
+| Rule | Checks |
+|---|---|
+| links | Every local link and anchor resolves; architecture pages carry no wire examples |
+| L1 | Every document under docs/ is linked from docs/README.md or from the README.md of its directory |
+| L2 | Each acceptance ID (PREFIX-NN bullet in features/ or domain/) is defined once and retired IDs are not redefined |
+| L3 | Each acceptance ID has a row in the traceability table below; a covered row must be greppable in test sources |
+| L4 | A numeric limit appears only in its owner document; other documents link to it |
+| L5 | Each ADR has an index row whose Status matches the file |
+| imports | Java imports follow the module matrix in [backend architecture](../architecture/backend.md) |
+
+The three AGENTS files and the GitHub templates are linted too.
+
 ## CI
 
 scripts/verify is the CI entry point. Its documentation check runs in the frontend
