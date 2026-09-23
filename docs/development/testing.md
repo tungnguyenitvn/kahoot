@@ -5,11 +5,11 @@
 | Gate | Command | What it proves / does not prove |
 |---|---|---|
 | Offline policy/lifecycle | node --test frontend/tests/*.test.mjs | Version/ranking + injected connection lifecycle; NOT Angular/browser behavior |
-| Lua smoke | texlua scripts/test-room.lua . (any Lua 5.3/5.4 interpreter works) | Sequential invariants with Redis double; NOT Redis concurrency/durability |
+| Lua smoke | scripts/test-room.lua, run by scripts/verify in a Lua 5.4 container (lua-smoke service); locally texlua or any Lua 5.3/5.4 | Sequential invariants with Redis double; NOT Redis concurrency/durability |
 | Documentation checks | node scripts/check-docs.mjs | Local links and documentation boundary rules; NOT semantic completeness |
 | Backend unit | Docker scripts/test or Gradle test in configured JDK | Mockito fault injection/coalescing tests; NOT real services |
 | Backend integration | scripts/test | Real HTTP/cookies/WS/Redis/SQL behavior in isolated services |
-| Full gate | scripts/verify | Documentation check, backend tests/package, Angular tests/build |
+| Full gate | scripts/verify | Lua smoke, backend tests/package, documentation check, Angular tests/build |
 
 Read the [verification status](../verification/README.md) for the latest executed
 result per gate. Never infer pass from the presence or name of a test.
@@ -78,6 +78,7 @@ The three AGENTS files and the GitHub templates are linted too.
 
 ## CI
 
-scripts/verify is the CI entry point. Its documentation check runs in the frontend
-test image (Node available), within the frontend stage; backend and frontend gates run in Docker.
+scripts/verify is the CI entry point. It runs the Lua smoke stage first, then the
+backend stage, then the frontend stage whose image also executes the documentation
+check (Node available); every stage runs in Docker.
 Do not substitute lightweight tests for unavailable full verification.

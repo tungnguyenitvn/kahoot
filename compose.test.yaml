@@ -31,6 +31,11 @@ services:
     init: true
     volumes: [./frontend:/app, frontend-modules:/app/node_modules, ./:/repo:ro]
     command: [sh, -c, "node /repo/scripts/check-docs.mjs && npm test && npm run build"]
+  lua-smoke:
+    build: {context: ./scripts, dockerfile: lua.Dockerfile}
+    volumes: [./:/repo:ro]
+    working_dir: /repo
+    command: [lua5.4, scripts/test-room.lua, .]
 volumes:
   gradle-cache:
   frontend-modules:
