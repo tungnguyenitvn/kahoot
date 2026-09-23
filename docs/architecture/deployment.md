@@ -20,17 +20,20 @@ cleanup.
 
 ## Release images and stack
 
-backend/Dockerfile.release compiles the boot jar with the committed wrapper and runs it
-on a JRE as a non-root user; frontend/Dockerfile.release compiles the Angular bundle and
-serves it from nginx, which proxies /api and /ws to the backend service
+The release images package what the verify gate built, they compile nothing:
+backend/Dockerfile.release puts backend/build/libs/quiz-room.jar on a JRE running as a
+non-root user; frontend/Dockerfile.release serves frontend/dist/quiz-room-ui/browser
+from nginx, which proxies /api and /ws to the backend service
 (frontend/nginx.release.conf). compose.release.yaml runs both images with PostgreSQL and
 Redis on one host: DB_PASSWORD and DEMO_PASSWORD have no default, PUBLIC_ORIGIN must be
 the browser-facing origin because the WebSocket Origin check uses it, and the demo seed
-remains the only account provisioning. scripts/smoke-release builds the stack, waits for
-the entry point and checks that the SPA, the API proxy and CSRF enforcement answer; CI
-runs it on every push and pull request and the release workflow runs it before
-publishing images to GHCR ([testing](../development/testing.md#ci),
-[ADR 0006](../adr/0006-ci-cd-release-images.md)).
+remains the only account provisioning. scripts/smoke-release packages the artifacts
+(run ./scripts/verify first, or set BUILD_ARTIFACTS=1 to build them without tests),
+boots the stack and checks that the SPA, the API proxy and CSRF enforcement answer; CI
+runs it after the verify job on every push and pull request, and the release workflow
+runs it before publishing images to GHCR ([testing](../development/testing.md#ci),
+[ADR 0006](../adr/0006-ci-cd-release-images.md),
+[ADR 0007](../adr/0007-ci-caches-and-verified-artifacts.md)).
 
 Still not implemented for production: TLS termination in front of nginx and the
 secure-cookie flag behind it, idle timeouts, secret management, resource budgets,

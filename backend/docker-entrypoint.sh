@@ -1,9 +1,8 @@
 #!/bin/sh
 set -eu
-if [ ! -f gradle/wrapper/gradle-wrapper.jar ]; then
-  cp /opt/wrapper/gradlew /opt/wrapper/gradlew.bat .
-  mkdir -p gradle/wrapper
-  cp /opt/wrapper/gradle/wrapper/* gradle/wrapper/
+if [ ! -f gradle/wrapper/gradle-wrapper.jar ] || [ ! -f gradlew ]; then
+  echo "backend/gradlew and backend/gradle/wrapper are part of the repository; restore them with git before starting the container" >&2
+  exit 1
 fi
 chmod +x gradlew
 exec ./gradlew "$@"

@@ -21,7 +21,8 @@ services:
     build: ./backend
     init: true
     environment: {DB_HOST: postgres, DB_NAME: quiz_test, DB_PASSWORD: quiz-test, REDIS_HOST: redis, TEST_ENV: "1", DEMO_ENABLED: "true"}
-    volumes: [./backend:/app, gradle-cache:/root/.gradle]
+    # Gradle distribution and dependency caches live in ./.cache/gradle so CI can restore them between runs.
+    volumes: [./backend:/app, ./.cache/gradle:/root/.gradle]
     command: [clean, test, integrationTest, bootJar, --no-daemon]
     depends_on:
       postgres: {condition: service_healthy}
@@ -29,7 +30,8 @@ services:
   frontend-test:
     build: ./frontend
     init: true
-    volumes: [./frontend:/app, frontend-modules:/app/node_modules, ./:/repo:ro]
+    # node_modules stays in a named volume for speed; the npm download cache is bind-mounted for CI restore.
+    volumes: [./frontend:/app, frontend-modules:/app/node_modules, ./.cache/npm:/root/.npm, ./:/repo:ro]
     command: [sh, -c, "node /repo/scripts/check-docs.mjs && npm test && npm run build"]
   lua-smoke:
     build: {context: ./scripts, dockerfile: lua.Dockerfile}
@@ -37,5 +39,4 @@ services:
     working_dir: /repo
     command: [lua5.4, scripts/test-room.lua, .]
 volumes:
-  gradle-cache:
   frontend-modules:

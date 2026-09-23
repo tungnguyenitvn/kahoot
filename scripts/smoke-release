@@ -1,10 +1,20 @@
 #!/usr/bin/env bash
-# Builds (unless SKIP_BUILD=1) and boots the release stack from compose.release.yaml, then checks that the
+# Packages the artifacts produced by the verify gate (backend/build/libs/quiz-room.jar and
+# frontend/dist/quiz-room-ui/browser) into the release images, boots compose.release.yaml and checks that the
 # nginx entry point serves the SPA, proxies the API and keeps CSRF enforcement. Used by ci.yml and release.yml.
+# BUILD_ARTIFACTS=1 builds the jar and the bundle first through the test compose services (no tests).
 set -euo pipefail
 cd "$(dirname "$0")/.."
 export DB_PASSWORD="${DB_PASSWORD:-smoke-only}" DEMO_PASSWORD="${DEMO_PASSWORD:-smoke-only}"
 export PUBLIC_PORT="${PUBLIC_PORT:-8081}"
+if [ "${BUILD_ARTIFACTS:-0}" = "1" ]; then
+  docker compose -f compose.test.yaml run --build --rm backend-test bootJar --no-daemon
+  docker compose -f compose.test.yaml run --build --rm frontend-test sh -c "npm run build"
+  docker compose -f compose.test.yaml down --remove-orphans
+fi
+for artifact in backend/build/libs/quiz-room.jar frontend/dist/quiz-room-ui/browser/index.html; do
+  [ -f "$artifact" ] || { echo "missing $artifact: run ./scripts/verify first, or BUILD_ARTIFACTS=1 $0"; exit 1; }
+done
 compose() { docker compose -f compose.release.yaml "$@"; }
 trap 'compose down --volumes --remove-orphans' EXIT
 compose config --quiet

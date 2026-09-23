@@ -16,7 +16,7 @@ docker compose up               # PostgreSQL, Redis, backend, Angular
 
 Mở `http://localhost:4200`; health endpoint của backend là `http://localhost:8080/actuator/health`. Tài khoản host mặc định là `host@example.test` / `local-quiz-only`. Host vào **Host studio**, tạo quiz tối thiểu một câu, xuất bản rồi mở phòng. Người chơi mở tab khác, nhập PIN sáu chữ số và tên. Dừng bằng `Ctrl+C`; dữ liệu dev nằm trong volume Docker.
 
-Gradle wrapper (`backend/gradlew`, `backend/gradle/wrapper`) và `frontend/package-lock.json` nằm trong cây nguồn; entrypoint chỉ bootstrap lại wrapper nếu thiếu và dùng `npm ci` khi có lockfile. Chạy công cụ ngoài Docker cần JDK 24, Gradle 8.14.3, Node theo `engines` trong `frontend/package.json` và TypeScript 6.0.x.
+Gradle wrapper (`backend/gradlew`, `backend/gradle/wrapper`) và `frontend/package-lock.json` nằm trong cây nguồn; container backend chỉ cần JDK và chạy wrapper đã commit, container frontend dùng `npm ci` khi có lockfile. Chạy công cụ ngoài Docker cần JDK 24, Gradle 8.14.3, Node theo `engines` trong `frontend/package.json` và TypeScript 6.0.x.
 
 ## Kiểm tra
 
@@ -28,13 +28,14 @@ node --test frontend/tests/*.test.mjs
 texlua scripts/test-room.lua . # smoke test Lua với Redis double; texlua hoặc Lua 5.3/5.4 bất kỳ
 ```
 
-Các lệnh offline không kiểm tra Spring, Redis, PostgreSQL, browser hay WebSocket thật. `./scripts/verify` dùng compose cô lập, không đụng volume dev. Phạm vi từng gate và ma trận acceptance ID → test: [testing](docs/development/testing.md).
+Các lệnh offline không kiểm tra Spring, Redis, PostgreSQL, browser hay WebSocket thật. `./scripts/verify` dùng compose cô lập, không đụng volume dev; Gradle distribution, dependency Maven và cache npm nằm trong `.cache/` (đã gitignore) để lần chạy sau và CI không tải lại. Phạm vi từng gate và ma trận acceptance ID → test: [testing](docs/development/testing.md).
 
 ## Release
 
-CI (`ci.yml`) chạy `scripts/verify` và `scripts/smoke-release` trên mọi PR và push lên
-`main`. Gắn tag `vX.Y.Z` rồi push tag: workflow `release` verify lại cây được tag, build
-image release đa tầng (`backend/Dockerfile.release`, `frontend/Dockerfile.release`),
+CI (`ci.yml`) chạy `scripts/verify` rồi `scripts/smoke-release` trên mọi PR và push lên
+`main`; image release chỉ đóng gói đúng jar và bundle mà gate đã kiểm tra, không build
+lại. Gắn tag `vX.Y.Z` rồi push tag: workflow `release` verify lại cây được tag, đóng gói
+image release (`backend/Dockerfile.release`, `frontend/Dockerfile.release`),
 smoke test stack `compose.release.yaml`, đẩy image lên GHCR
 (`ghcr.io/tungnguyenitvn/kahoot-backend`, `ghcr.io/tungnguyenitvn/kahoot-frontend`)
 và tạo GitHub Release kèm jar. Chạy stack từ image đã publish:

@@ -10,13 +10,28 @@ concurrency:
   group: release-${{ github.ref }}
 jobs:
   release:
-    name: verify, build, smoke, publish
+    name: verify, package, smoke, publish
     runs-on: ubuntu-latest
     timeout-minutes: 45
     steps:
       - uses: actions/checkout@v7
+      - name: Restore the Gradle distribution and dependency cache
+        uses: actions/cache@v6
+        with:
+          path: .cache/gradle
+          key: gradle-${{ runner.os }}-${{ hashFiles('backend/build.gradle.kts', 'backend/settings.gradle.kts', 'backend/gradle/wrapper/gradle-wrapper.properties') }}
+          restore-keys: gradle-${{ runner.os }}-
+      - name: Restore the npm download cache
+        uses: actions/cache@v6
+        with:
+          path: .cache/npm
+          key: npm-${{ runner.os }}-${{ hashFiles('frontend/package-lock.json') }}
+          restore-keys: npm-${{ runner.os }}-
       - name: Verify the released tree
         run: ./scripts/verify
+      - name: Make the container-written caches savable by the runner user
+        if: always()
+        run: sudo chown -R "$(id -u):$(id -g)" .cache 2>/dev/null || true
       - name: Image names
         id: names
         run: |
@@ -26,7 +41,7 @@ jobs:
           echo "backend=ghcr.io/${owner}/kahoot-backend" >> "$GITHUB_OUTPUT"
           echo "frontend=ghcr.io/${owner}/kahoot-frontend" >> "$GITHUB_OUTPUT"
           echo "version=${version}" >> "$GITHUB_OUTPUT"
-      - name: Build the release images and smoke the stack
+      - name: Package the verified artifacts into the release images and smoke the stack
         env:
           BACKEND_IMAGE: ${{ steps.names.outputs.backend }}:${{ steps.names.outputs.version }}
           FRONTEND_IMAGE: ${{ steps.names.outputs.frontend }}:${{ steps.names.outputs.version }}
@@ -47,13 +62,8 @@ jobs:
             docker tag "$BACKEND_IMAGE" "${{ steps.names.outputs.backend }}:latest" && docker push "${{ steps.names.outputs.backend }}:latest"
             docker tag "$FRONTEND_IMAGE" "${{ steps.names.outputs.frontend }}:latest" && docker push "${{ steps.names.outputs.frontend }}:latest"
           fi
-      - name: Extract the boot jar
-        env:
-          BACKEND_IMAGE: ${{ steps.names.outputs.backend }}:${{ steps.names.outputs.version }}
-        run: |
-          id=$(docker create "$BACKEND_IMAGE")
-          docker cp "$id":/app/app.jar "quiz-room-${{ steps.names.outputs.version }}.jar"
-          docker rm "$id" >/dev/null
+      - name: Name the verified jar
+        run: cp backend/build/libs/quiz-room.jar "quiz-room-${{ steps.names.outputs.version }}.jar"
       - uses: actions/upload-artifact@v7
         with:
           name: release-jar

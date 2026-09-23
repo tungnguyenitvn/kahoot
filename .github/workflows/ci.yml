@@ -16,8 +16,23 @@ jobs:
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v7
+      - name: Restore the Gradle distribution and dependency cache
+        uses: actions/cache@v6
+        with:
+          path: .cache/gradle
+          key: gradle-${{ runner.os }}-${{ hashFiles('backend/build.gradle.kts', 'backend/settings.gradle.kts', 'backend/gradle/wrapper/gradle-wrapper.properties') }}
+          restore-keys: gradle-${{ runner.os }}-
+      - name: Restore the npm download cache
+        uses: actions/cache@v6
+        with:
+          path: .cache/npm
+          key: npm-${{ runner.os }}-${{ hashFiles('frontend/package-lock.json') }}
+          restore-keys: npm-${{ runner.os }}-
       - name: Lua smoke, backend tests, documentation lint, Angular tests and build
         run: ./scripts/verify
+      - name: Make the container-written caches savable by the runner user
+        if: always()
+        run: sudo chown -R "$(id -u):$(id -g)" .cache 2>/dev/null || true
       - uses: actions/upload-artifact@v7
         if: always()
         with:
@@ -26,14 +41,26 @@ jobs:
             backend/build/reports/tests
             backend/build/test-results
           if-no-files-found: ignore
+      - name: Publish the verified artifacts for the release images
+        uses: actions/upload-artifact@v7
+        with:
+          name: build-artifacts
+          path: |
+            backend/build/libs/quiz-room.jar
+            frontend/dist/quiz-room-ui/browser
   release-images:
-    name: release images build and smoke
+    name: release images from verified artifacts
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    needs: verify
+    timeout-minutes: 20
     env:
       BACKEND_IMAGE: kahoot-backend:ci
       FRONTEND_IMAGE: kahoot-frontend:ci
     steps:
       - uses: actions/checkout@v7
-      - name: Build the release images and smoke the stack
+      - uses: actions/download-artifact@v8
+        with:
+          name: build-artifacts
+          path: .
+      - name: Package the verified artifacts into the release images and smoke the stack
         run: ./scripts/smoke-release
