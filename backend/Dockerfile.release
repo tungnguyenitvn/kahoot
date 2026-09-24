@@ -1,6 +1,6 @@
 # Release image: package the boot jar that the verify gate built (backend/build/libs/quiz-room.jar) on a JRE,
 # running as a non-root user. Nothing is compiled here, so the shipped jar is exactly the tested one.
-FROM eclipse-temurin:24-jre
+FROM eclipse-temurin:25-jre
 RUN apt-get update && apt-get install -y --no-install-recommends curl && rm -rf /var/lib/apt/lists/* \
  && useradd --system --uid 10001 --home /app quiz
 WORKDIR /app

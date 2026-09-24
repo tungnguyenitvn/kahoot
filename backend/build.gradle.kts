@@ -5,7 +5,7 @@ plugins {
 }
 group = "dev.sample"
 version = "0.2.2"
-java { toolchain { languageVersion.set(JavaLanguageVersion.of(24)) } }
+java { toolchain { languageVersion.set(JavaLanguageVersion.of(25)) } }
 repositories { mavenCentral() }
 dependencies {
     implementation("org.springframework.boot:spring-boot-starter-webmvc")
@@ -22,7 +22,7 @@ dependencies {
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
-val integrationTest by sourceSets.creating
+val integrationTest = sourceSets.create("integrationTest")
 configurations[integrationTest.implementationConfigurationName].extendsFrom(configurations.testImplementation.get())
 configurations[integrationTest.runtimeOnlyConfigurationName].extendsFrom(configurations.testRuntimeOnly.get())
 integrationTest.compileClasspath += sourceSets.main.get().output
@@ -37,4 +37,4 @@ tasks.register<Test>("integrationTest") {
 tasks.withType<Test>().configureEach { useJUnitPlatform() }
 tasks.withType<JavaCompile>().configureEach { options.encoding = "UTF-8" }
 tasks.bootJar { archiveFileName.set("quiz-room.jar") }
-tasks.wrapper { gradleVersion = "8.14.3"; distributionType = Wrapper.DistributionType.BIN }
+tasks.wrapper { gradleVersion = "9.7.1"; distributionType = Wrapper.DistributionType.BIN }

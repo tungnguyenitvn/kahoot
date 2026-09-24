@@ -12,7 +12,8 @@
 | [0008](0008-verification-history-in-git.md) | Verification history lives in git, not in docs | Superseded by 0010 | 2026-09-24 |
 | [0009](0009-layered-modules-and-feature-folders.md) | Layered backend modules and frontend feature folders | Accepted | 2026-09-24 |
 | [0010](0010-compact-documentation-map.md) | Compact documentation map | Accepted | 2026-09-24 |
-| [0011](0011-java-24-until-the-next-toolchain-change.md) | Java 24 stays pinned until the next toolchain change; the target is the LTS | Accepted | 2026-09-24 |
+| [0011](0011-java-24-until-the-next-toolchain-change.md) | Java 24 stays pinned until the next toolchain change; the target is the LTS | Superseded by 0012 | 2026-09-24 |
+| [0012](0012-java-25-lts-and-gradle-9.md) | Java 25 LTS and Gradle 9 now | Accepted | 2026-09-24 |
 
 ## Template
 

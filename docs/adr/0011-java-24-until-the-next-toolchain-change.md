@@ -1,6 +1,6 @@
 # ADR 0011: Java 24 stays pinned until the next toolchain change; the target is the LTS
 
-Status: Accepted.
+Status: Superseded by [ADR 0012](0012-java-25-lts-and-gradle-9.md).
 Date: 2026-09-24.
 
 ## Context
