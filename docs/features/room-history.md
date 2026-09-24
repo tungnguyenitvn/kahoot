@@ -33,9 +33,9 @@ theo room version trước khi ACK.
 - HIST-04: Kết quả archive vẫn đọc được sau khi Redis live keys được cleanup.
 
 Replay hoặc worker retry không nhân đôi answer/score là invariant LIVE-06 trong
-[domain rules](../domain/game.md#acceptance-invariants).
+[domain rules](../domain.md#acceptance-invariants).
 
 ## Contracts
 
 Xem [REST API](../contracts/rest-api.md), [Redis room contract](../contracts/redis-room.md)
-và [archive design](../modules/archive.md).
+và [archive design](../architecture/backend.md#archive).

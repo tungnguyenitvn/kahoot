@@ -3,7 +3,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 // Documentation lint. Rule modes: 'fail' breaks the gate, 'warn' only prints, 'off' skips.
-// Flip a rule to 'fail' only when the tree is clean for it; docs/development/testing.md lists the rules.
+// Flip a rule to 'fail' only when the tree is clean for it; docs/development.md lists the rules.
 const MODE = { links: 'fail', wire: 'fail', imports: 'fail', L1: 'fail', L2: 'fail', L3: 'fail', L4: 'fail', L5: 'fail' };
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -61,9 +61,9 @@ for (const file of docs) {
   if (!indexTargets.has(file) && !viaDirectory) report('L1', `${rel(file)}: not linked from docs/README.md or its directory README.md`);
 }
 
-// L2: acceptance IDs (PREFIX-NN bullets in docs/features and docs/domain) are defined exactly once and retired IDs are never redefined.
+// L2: acceptance IDs (PREFIX-NN bullets in docs/features and docs/domain.md) are defined exactly once and retired IDs are never redefined.
 const definitions = new Map();
-for (const file of [...walk(path.join(docsRoot, 'features')), ...walk(path.join(docsRoot, 'domain'))]) {
+for (const file of [...walk(path.join(docsRoot, 'features')), path.join(docsRoot, 'domain.md')].filter(fs.existsSync)) {
   stripCode(read(file)).split('\n').forEach((line, i) => {
     const m = /^\s*-\s+([A-Z]{2,}-\d{2}):/.exec(line);
     if (m) definitions.set(m[1], [...(definitions.get(m[1]) ?? []), `${rel(file)}:${i + 1}`]);
@@ -77,11 +77,11 @@ for (const [id, sites] of definitions) {
   if (retired.has(id)) report('L2', `${id} is retired (${retired.get(id)}) but still defined at ${sites[0]}`);
 }
 
-// L3: every defined ID has a row in the testing.md traceability table; covered rows must be greppable in test sources.
+// L3: every defined ID has a row in the development.md traceability table; covered rows must be greppable in test sources.
 const rows = new Map();
-const testingDoc = path.join(docsRoot, 'development', 'testing.md');
+const testingDoc = path.join(docsRoot, 'development.md');
 if (fs.existsSync(testingDoc)) {
-  const section = read(testingDoc).split(/^## Traceability\b.*$/m)[1] ?? '';
+  const section = read(testingDoc).split(/^#{2,3} Traceability\b.*$/m)[1] ?? '';
   for (const m of section.matchAll(/^\|\s*([A-Z]{2,}-\d{2})\s*\|\s*([^|]*?)\s*\|/gm)) rows.set(m[1], m[2]);
 }
 const testSources = ['backend/src/test', 'backend/src/integrationTest', 'frontend/tests', 'scripts/test-room.lua']
@@ -89,7 +89,7 @@ const testSources = ['backend/src/test', 'backend/src/integrationTest', 'fronten
   .flatMap(p => fs.statSync(p).isDirectory() ? walk(p, () => true) : [p]).map(read).join('\n');
 for (const id of definitions.keys()) {
   const row = rows.get(id);
-  if (row === undefined) { report('L3', `${id}: no row in the testing.md traceability table`); continue; }
+  if (row === undefined) { report('L3', `${id}: no row in the development.md traceability table`); continue; }
   if (!/NOT COVERED/.test(row) && !testSources.includes(id)) report('L3', `${id}: marked covered but no test source mentions it`);
 }
 for (const id of rows.keys()) if (!definitions.has(id)) report('L3', `${id}: traceability row for an undefined or retired ID`);
@@ -97,7 +97,7 @@ for (const id of rows.keys()) if (!definitions.has(id)) report('L3', `${id}: tra
 // L4: a numeric limit appears only in its owner document; link text is exempt. Owners follow the precedence in docs/README.md.
 // Word boundaries are Unicode-aware so Vietnamese words such as "ký tự" terminate a match.
 const literal = (source, flags = '') => new RegExp(`(?<![\\p{L}\\p{N}])(?:${source})(?![\\p{L}\\p{N}])`, 'u' + flags);
-const DOMAIN = ['docs/domain/game.md'], LIMITS = ['docs/architecture/quality-and-risks.md'];
+const DOMAIN = ['docs/domain.md'], LIMITS = ['docs/architecture/README.md'];
 const LITERALS = [
   { pattern: literal('1024'), owners: ['docs/contracts/websocket.md'] },
   { pattern: literal('top 10', 'i'), owners: LIMITS },

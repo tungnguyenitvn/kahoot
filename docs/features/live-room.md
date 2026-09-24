@@ -15,12 +15,12 @@ deadline, receipt, thứ tự đúng và score; Angular chỉ hiển thị autho
 
 - Header hiển thị title, PIN và trạng thái realtime.
 - Main stage thay đổi theo phase; các phase và transition hợp lệ nằm trong
-  [bảng state transitions](../domain/game.md#state-transitions).
+  [bảng state transitions](../domain.md#state-transitions).
 - Player list hiển thị active/removed và answered state.
-- Leaderboard hiển thị số hàng theo [bảng limits](../architecture/quality-and-risks.md#limits-and-timings),
+- Leaderboard hiển thị số hàng theo [bảng limits](../architecture/README.md#limits-and-timings),
   cùng điểm dùng competition rank.
 - Client không tự quyết định score, thứ tự đúng hay deadline; đó là LIVE-02 trong
-  [domain rules](../domain/game.md#acceptance-invariants).
+  [domain rules](../domain.md#acceptance-invariants).
 
 ## Lobby
 
@@ -44,7 +44,7 @@ deadline, receipt, thứ tự đúng và score; Angular chỉ hiển thị autho
 ## Submit answer
 
 Capability bên trong màn hình này, không phải route mới; implementation đã có, phạm vi
-verification ghi trong [testing](../development/testing.md).
+verification ghi trong [testing](../development.md#testing-and-evidence).
 
 - ANSWER-01: Player đang active chọn một option trong QUESTION hiện tại.
 - ANSWER-04: Khi kết quả chưa rõ, retry dùng nguyên option/round/commandId ban đầu. Round
@@ -55,9 +55,9 @@ verification ghi trong [testing](../development/testing.md).
   request nào; giữ pending ở 429 là để tương thích với rate limiter hạ tầng nếu có.
 
 Dedupe theo room/round/participant và privacy trước reveal là LIVE-03 và LIVE-04 trong
-[domain rules](../domain/game.md#acceptance-invariants). [REST idempotency](../contracts/rest-api.md#idempotency)
-định nghĩa identity và error; [gameplay](../modules/gameplay.md) sở hữu scoring,
-[realtime](../modules/realtime.md) sở hữu recovery. Browser E2E cho store/template chưa
+[domain rules](../domain.md#acceptance-invariants). [REST idempotency](../contracts/rest-api.md#idempotency)
+định nghĩa identity và error; [gameplay](../architecture/backend.md#gameplay) sở hữu scoring,
+[frontend architecture](../architecture/frontend.md#room-connection-lifecycle) sở hữu recovery. Browser E2E cho store/template chưa
 được implement.
 
 ## Reveal và finished
@@ -75,7 +75,7 @@ Dedupe theo room/round/participant và privacy trước reveal là LIVE-03 và L
    version không cũ hơn theo [room-state](../contracts/room-state.md#merge-and-privacy).
 2. Lỗi REST ban đầu vẫn giữ polling để phục hồi; socket close hiển thị **Đang nối lại**,
    reconnect với backoff có giới hạn và vẫn poll REST định kỳ. Giá trị nằm trong
-   [bảng limits](../architecture/quality-and-risks.md#limits-and-timings). Bị từ chối
+   [bảng limits](../architecture/README.md#limits-and-timings). Bị từ chối
    vì hết dung lượng thì chỉ thử lại ở lần poll kế tiếp (ROOM-07).
 3. Pending answer giữ nguyên tới khi nhận receipt hoặc terminal error.
 4. `STALE_ROUND`, `DEADLINE_PASSED`, `ALREADY_ANSWERED` yêu cầu reconcile snapshot.
@@ -91,9 +91,9 @@ Dedupe theo room/round/participant và privacy trước reveal là LIVE-03 và L
 
 Thứ tự đúng do server quyết định, dedupe answer, privacy trước reveal và fail-closed khi
 mất Redis là các invariant LIVE-02, LIVE-03, LIVE-04 và LIVE-07 trong
-[domain rules](../domain/game.md#acceptance-invariants).
+[domain rules](../domain.md#acceptance-invariants).
 
 ## Contracts
 
 Xem [WebSocket contract](../contracts/websocket.md), [REST API](../contracts/rest-api.md),
-[Redis room](../contracts/redis-room.md) và [domain game rules](../domain/game.md).
+[Redis room](../contracts/redis-room.md) và [domain game rules](../domain.md).

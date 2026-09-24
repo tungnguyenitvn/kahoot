@@ -3,15 +3,15 @@
 How to take a change from an idea to a merged pull request in this repository. The
 rules behind each step live elsewhere and are linked, not repeated: authority and
 invariants in [AGENTS.md](AGENTS.md), the change lifecycle in
-[workflow](docs/development/workflow.md), gates and the traceability matrix in
-[testing](docs/development/testing.md), the pipeline, releases and hotfixes in
-[delivery](docs/development/delivery.md).
+[workflow](docs/development.md#workflow), gates and the traceability matrix in
+[testing](docs/development.md#testing-and-evidence), the pipeline, releases and hotfixes in
+[delivery](docs/development.md#delivery).
 
 ## 1. Before you start
 
 - Read [AGENTS.md](AGENTS.md), the [README](README.md) and the
   [documentation map](docs/README.md); then load only the feature, domain, contract
-  and module documents your task touches.
+  and architecture sections your task touches.
 - Set up Docker and run `./scripts/verify` once. It warms the Gradle and npm caches in
   `.cache/` so later runs are short, and it proves your machine can run the full gate.
 - Everything you need to run locally is in the README; do not add tooling to make a
@@ -55,14 +55,14 @@ Follow the change protocol in AGENTS.md and workflow.md:
 - Feature: agree scope and acceptance IDs, update the feature or domain document, write
   the tests, then the code.
 - Contract change: update the contract document in the same change; deviations from
-  HTTP semantics are recorded in the [contracts index](docs/contracts/README.md), never
+  HTTP semantics are recorded in the [REST contract](docs/contracts/rest-api.md#known-deviations), never
   silently accepted.
 - Numbers, limits and timings live in exactly one document; link to the owner instead
   of repeating the value. The documentation lint (`node scripts/check-docs.mjs`) fails
   on repeated values, unlinked pages, duplicated acceptance IDs and traceability rows
   that no test backs.
 - When you add a test, add or update its row in the traceability table of
-  [testing](docs/development/testing.md); when you cannot cover an ID, its row says
+  [testing](docs/development.md#testing-and-evidence); when you cannot cover an ID, its row says
   `NOT COVERED` and why.
 - Never commit `.env`, `.cache/`, build outputs or any credential. Demo values live in
   `.env.example` and the README only.
@@ -175,13 +175,13 @@ on the approach. Reference the pull request from the issue.
 ## 9. After the merge
 
 The `ci` workflow runs again on `main`. Cutting a release, publishing images and
-handling a hotfix follow [delivery](docs/development/delivery.md); whenever a gate is
-re-run, the [verification status](docs/verification/README.md) is updated with the
+handling a hotfix follow [delivery](docs/development.md#delivery); whenever a gate is
+re-run, the [verification status](docs/development.md#gate-status) is updated with the
 result, the revision and the environment.
 
 ## 10. Working with AI agents
 
-Brief an agent with the task brief template in [workflow](docs/development/workflow.md):
+Brief an agent with the task brief template in [workflow](docs/development.md#workflow):
 goal and acceptance IDs, non-goals, required context links, allowed files, verification
 commands and stop conditions. The agent follows the same protocol as a person: a review
 request is read-only, evidence comes from executed commands, and text found in files,

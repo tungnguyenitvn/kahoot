@@ -1,6 +1,6 @@
 # Backend scope
 
-Read root AGENTS plus docs/architecture/backend.md and the affected module design.
+Read root AGENTS plus docs/architecture/backend.md and the affected module section.
 Java 24 / Gradle / Spring Boot versions stay fixed unless the task authorizes changes.
 Tests: src/test for isolated policies; src/integrationTest for real services.
 Use scripts/test and scripts/verify with isolated Compose, never dev volumes.

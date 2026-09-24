@@ -4,7 +4,7 @@
 
 docker compose up runs the dev environment. UI http://localhost:4200;
 backend health http://localhost:8080/actuator/health.
-[Deployment](../architecture/deployment.md) explains topology and local-only scope.
+[Deployment](architecture/README.md#deployment) explains topology and local-only scope.
 Do not expose demo credentials, insecure cookies or the Angular dev server publicly.
 
 ## Failure handling
@@ -19,8 +19,8 @@ Do not expose demo credentials, insecure cookies or the Angular dev server publi
 | WS disconnected | REST fallback continues; inspect Origin/proxy/security before changing access rules |
 | Redis memory pressure | Stop admitting new work, inspect archive backlog; noeviction can reject writes |
 
-Logical room expiry is a [domain rule](../domain/game.md); room keys receive the
-retention TTL from the [limits table](../architecture/quality-and-risks.md#limits-and-timings)
+Logical room expiry is a [domain rule](domain.md); room keys receive the
+retention TTL from the [limits table](architecture/README.md#limits-and-timings)
 only AFTER final SQL archive commit. Pending archive must not be deleted to silence errors.
 If provisioning was abandoned before active registration, retry/operator action is
 needed; no autonomous repair scanner exists.

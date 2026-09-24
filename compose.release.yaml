@@ -1,5 +1,5 @@
 # Release stack built from the multi-stage images (or pulled from GHCR). One host, no TLS: put a TLS
-# terminator in front and set PUBLIC_ORIGIN and COOKIE_SECURE accordingly. See docs/architecture/deployment.md.
+# terminator in front and set PUBLIC_ORIGIN and COOKIE_SECURE accordingly. See docs/architecture/README.md#deployment.
 name: quiz-room-release
 services:
   postgres:

@@ -91,9 +91,19 @@ may use framework errors; clients must tolerate a missing code.
 | 401 | SESSION_REQUIRED, INVALID_CREDENTIALS: restore/authenticate session |
 | 403 | ACCESS_DENIED, CSRF_REQUIRED, LOGIN_REQUIRED, HOST_REQUIRED, ROOM_ACCESS_DENIED, MEMBERSHIP_REVOKED |
 | 404 | ROOM_NOT_FOUND, QUIZ_NOT_FOUND, PLAYER_NOT_FOUND |
-| 409 | JOIN_CLOSED, ROOM_FULL, NAME_TAKEN, HOST_CANNOT_JOIN, QUIZ_NOT_PUBLISHED, INVALID_PHASE, PLAYERS_REQUIRED, ROUND_CLOSED, STALE_ROUND, DEADLINE_PASSED, ALREADY_ANSWERED, COMMAND_CONFLICT, ARCHIVE_NOT_READY, COMMAND_LIMIT (host control ledger is full; retrying never clears it, open a new room; capacity in the [limits table](../architecture/quality-and-risks.md#limits-and-timings)) |
+| 409 | JOIN_CLOSED, ROOM_FULL, NAME_TAKEN, HOST_CANNOT_JOIN, QUIZ_NOT_PUBLISHED, INVALID_PHASE, PLAYERS_REQUIRED, ROUND_CLOSED, STALE_ROUND, DEADLINE_PASSED, ALREADY_ANSWERED, COMMAND_CONFLICT, ARCHIVE_NOT_READY, COMMAND_LIMIT (host control ledger is full; retrying never clears it, open a new room; capacity in the [limits table](../architecture/README.md#limits-and-timings)) |
 | 503 | STORAGE_UNAVAILABLE, ROOM_LIMIT, PIN_UNAVAILABLE, ROOM_STATE_LOST, STATE_CORRUPT, REDIS_NO_RESULT, REDIS_ERROR |
 
 On ambiguous timeout, reconcile. Retry supported live commands with original input,
 not a newly generated identity/command. Corrupt/lost state requires operator action;
 do not endlessly retry every 503 or reconstruct scores from SQL.
+
+## Known deviations
+
+Contracts describe current behavior. Deviations from HTTP semantics or project
+conventions are listed here so no document silently rewrites them; each needs a
+code change and a contract update in the same task.
+
+| Deviation | Current behavior | Decision |
+|---|---|---|
+| Creation responds 200, not 201 | POST /quizzes and POST /rooms return 200 with the created resource; RFC 9110 recommends 201 for a created resource | Accepted convention: every successful JSON response is 200, and clients must not depend on 201 |

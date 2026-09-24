@@ -35,7 +35,7 @@ but not required for this bounded sample.
 Coalescing can skip intermediate versions and add notification delay; full snapshots
 make that acceptable, answer receipts remain independent. Limits are protective
 settings, not latency benchmarks; their values are canonical in the
-[limits table](../architecture/quality-and-risks.md#limits-and-timings).
+[limits table](../architecture/README.md#limits-and-timings).
 
 ## Verification
 
