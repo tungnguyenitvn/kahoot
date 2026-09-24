@@ -116,7 +116,7 @@ The rules are in the [frontend architecture](docs/architecture/frontend.md).
 ```bash
 node scripts/check-docs.mjs
 node --test scripts/check-docs.test.mjs
-node --test frontend/tests/*.test.mjs
+node --test "frontend/tests/**/*.test.mjs"
 ./scripts/verify
 ```
 

@@ -1,4 +1,4 @@
-import type { Room } from './models';
+import type { Room } from '../../shared/models/room';
 export interface RoomConnectionOptions {
   roomId: string;
   loadSnapshot: () => Promise<unknown>;

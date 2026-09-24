@@ -1,7 +1,9 @@
 import { Injectable, DestroyRef, computed, inject, linkedSignal, signal } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
-import { Api, Auth, errorMessage } from './api';
-import { Room, Receipt } from './models';
+import { Api } from '../../core/http';
+import { Auth } from '../../core/auth';
+import { errorMessage } from '../../core/errors';
+import { Room, Receipt } from '../../shared/models/room';
 import { leaderboard, shouldApply, isRoomSnapshot } from './room-state.mjs';
 import { RoomConnection } from './room-connection.mjs';
 

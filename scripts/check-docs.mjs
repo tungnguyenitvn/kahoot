@@ -4,7 +4,7 @@ import { fileURLToPath } from 'node:url';
 
 // Documentation lint. Rule modes: 'fail' breaks the gate, 'warn' only prints, 'off' skips.
 // Flip a rule to 'fail' only when the tree is clean for it; docs/development.md lists the rules.
-const MODE = { links: 'fail', wire: 'fail', imports: 'fail', L1: 'fail', L2: 'fail', L3: 'fail', L4: 'fail', L5: 'fail' };
+const MODE = { links: 'fail', wire: 'fail', imports: 'fail', frontend: 'fail', L1: 'fail', L2: 'fail', L3: 'fail', L4: 'fail', L5: 'fail' };
 
 // CHECK_DOCS_ROOT points the lint at another tree; scripts/check-docs.test.mjs uses it for fixture trees.
 const root = process.env.CHECK_DOCS_ROOT ? path.resolve(process.env.CHECK_DOCS_ROOT) : path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -166,6 +166,36 @@ for (const file of walk(source, f => f.endsWith('.java'))) {
 }
 for (const own of unknown) report('imports', `${rel(path.join(source, own))}: package ${own} is not in the module matrix; register it in docs/architecture/backend.md and in the allowed map`);
 
+// Frontend folders (docs/architecture/frontend.md): features -> core and shared; core -> shared; shared -> nothing in the
+// application; features never import each other or the app root; a policy module (.mjs) imports only other .mjs files.
+const appRoot = path.join(root, 'frontend/src/app');
+const zone = file => {
+  const parts = path.relative(appRoot, file).split(path.sep);
+  return parts[0] === 'features' ? `features/${parts[1]}` : parts.length > 1 ? parts[0] : 'app';
+};
+const allowedZones = { app: null, core: ['core', 'shared'], shared: ['shared'] };
+for (const file of walk(appRoot, f => /\.(ts|mts|mjs)$/.test(f))) {
+  const own = zone(file), text = stripCode(read(file));
+  for (const match of text.matchAll(/^\s*(?:import|export)\b[^;]*?\bfrom\s+['"]([^'"]+)['"]/gm)) {
+    const target = match[1];
+    if (file.endsWith('.mjs')) {
+      if (!(target.startsWith('.') && target.endsWith('.mjs'))) report('frontend', `${rel(file)}: policy module imports ${target}; a policy module imports only other .mjs modules, never Angular, the DOM or a TypeScript file`);
+      continue;
+    }
+    if (!target.startsWith('.')) continue;
+    const resolved = path.resolve(path.dirname(file), target);
+    if (!resolved.startsWith(appRoot)) continue;
+    const other = zone(resolved.endsWith('.ts') || resolved.endsWith('.mjs') || resolved.endsWith('.mts') ? resolved : resolved + '.ts');
+    if (other === own) continue;
+    const allowedFrom = own.startsWith('features/') ? ['core', 'shared'] : allowedZones[own];
+    if (allowedFrom === null) continue;
+    if (!allowedFrom.includes(other)) {
+      const label = other === 'app' ? path.basename(resolved) + (resolved.endsWith('.ts') ? '' : '.ts') : other;
+      report('frontend', `${rel(file)}: ${own} imports ${label}; features import only core and shared, core imports only shared, shared imports nothing in the application`);
+    }
+  }
+}
+
 for (const warning of warnings) console.warn('WARN ' + warning);
 if (failures.length) { console.error(failures.join('\n')); process.exitCode = 1; }
-else console.log(`PASS ${files.length} documents, ${linkCount} local links/anchors, wire-example boundary, Java import directions; rules ${Object.entries(MODE).map(([k, v]) => k + '=' + v).join(' ')}; ${warnings.length} warning(s)`);
+else console.log(`PASS ${files.length} documents, ${linkCount} local links/anchors, wire-example boundary, Java import directions, frontend folder boundaries; rules ${Object.entries(MODE).map(([k, v]) => k + '=' + v).join(' ')}; ${warnings.length} warning(s)`);

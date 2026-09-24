@@ -1,8 +1,10 @@
 import { Component, inject, signal, ChangeDetectionStrategy } from '@angular/core';
 import { form, FormField, required, pattern, maxLength } from '@angular/forms/signals';
 import { Router } from '@angular/router';
-import { Api, Auth, errorMessage } from './api';
-import { Room } from './models';
+import { Api } from '../../core/http';
+import { Auth } from '../../core/auth';
+import { errorMessage } from '../../core/errors';
+import { Room } from '../../shared/models/room';
 @Component({ imports: [FormField], changeDetection: ChangeDetectionStrategy.OnPush, template: `
   <section class="hero"><div><p class="eyebrow">MỘT CÂU HỎI. CẢ PHÒNG CÙNG CHƠI.</p>
     <h1>Nghĩ nhanh.<br><em>Chơi hết mình.</em></h1><p>Trả lời đúng để ghi điểm. Ai đúng trước sẽ nhận bậc điểm cao hơn.</p>

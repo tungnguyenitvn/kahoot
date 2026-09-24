@@ -1,17 +1,8 @@
 import { Injectable, inject, signal } from '@angular/core';
-import { HttpClient, HttpErrorResponse, HttpParams } from '@angular/common/http';
-import { firstValueFrom } from 'rxjs';
-import { Identity } from './models';
-export function errorMessage(error: unknown): string {
-  if (error instanceof HttpErrorResponse) return error.error?.code ?? (error.status === 0 ? 'Mất kết nối. Có thể thử lại cùng thao tác.' : `Yêu cầu thất bại (${error.status}).`);
-  return error instanceof Error ? error.message : 'Đã có lỗi xảy ra.';
-}
-@Injectable({ providedIn: 'root' })
-export class Api {
-  private readonly http = inject(HttpClient);
-  get<T>(url: string) { return firstValueFrom(this.http.get<T>(url)); }
-  post<T>(url: string, body: unknown) { return firstValueFrom(this.http.post<T>(url, body)); }
-}
+import { HttpParams } from '@angular/common/http';
+import { Api } from './http';
+import { Identity } from '../shared/models/identity';
+/** Session bootstrap and the identity signal; the server session stays authoritative and no credential is stored here. */
 @Injectable({ providedIn: 'root' })
 export class Auth {
   private readonly api = inject(Api);
