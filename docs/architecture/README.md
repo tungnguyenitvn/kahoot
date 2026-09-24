@@ -130,12 +130,12 @@ repeated elsewhere. Change a value here and in its source in the same change.
 | PIN reservation TTL | 2 h from reservation | RoomService.reservePin |
 | Active-room admission | 100 active rooms per Redis, advisory check | RoomService.create |
 | Host command ledger | 500 entries per room, then COMMAND_LIMIT | room.lua |
-| Room key retention | 24 h, starting at final archive commit | ArchiveWorker |
+| Room key retention | 24 h, starting at final archive commit | RedisRoomEvents.finish |
 | HTTP session timeout | 4 h | application.yml |
 | Redis command timeout | 2 s | application.yml |
 | Dev Redis memory | 256 MB, noeviction, AOF everysec | compose.yaml |
 | Room timer | fixed delay 250 ms after each pass | RoomTimers |
-| Archive worker | fixed delay 1 s after each pass; 100 entries per read | ArchiveWorker |
+| Archive worker | fixed delay 1 s after each pass; 100 entries per read | ArchiveWorker (delay), RedisRoomEvents (batch) |
 | Notification flush | every 50 ms; at least 250 ms between snapshots per connection; idle session recheck after 5 s | RoomWebSocketHub |
 | In-flight snapshot tasks | 16 per process, 1 per connection | RoomWebSocketHub |
 | WebSocket registration | 1,000 connections per process, 150 per room | RoomWebSocketHub |

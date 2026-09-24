@@ -16,7 +16,7 @@ to [conventions](../development.md#conventions) and every numeric value to the
 | identity | Host accounts, guest and host session identity, HTTP security | `domain.Identity`, `domain.Account`; `application.Identities` (current, ensure, host), `Accounts` (register, find); `Sessions` port (liveness) | [identity/catalog](#identity-and-catalog) |
 | catalog | Host-owned draft and published quizzes | `application.QuizCatalog` facade; `domain.Quiz`, `Question`, `Draft`, `QuizStatus` | [identity/catalog](#identity-and-catalog) |
 | gameplay | Room provisioning, live commands, snapshots, realtime delivery | `Rooms` facade (create, join, snapshot, answer, control) | [gameplay](#gameplay), [realtime](#realtime-delivery) |
-| archive | Ordered event projection and host history | `History` read facade | [archive](#archive) |
+| archive | Ordered event projection and host history | `application.Projection` (apply one event), `Archiver` (one pass), `History` read facade; `domain.RoomEvent`, `EventType`, `HistoryRoom`, `HistoryResult` | [archive](#archive) |
 | shared | Technical policy: API error mapping, scheduling, store configuration | Exceptions and configuration | none |
 | bootstrap | Composition root: demo seed at startup | none | none |
 
@@ -174,11 +174,9 @@ it from this table.
 
 | Gap | Current state | Target |
 |---|---|---|
-| Layers | catalog and identity have the four layers; gameplay and archive are flat packages with the role in the class-name suffix | api / application / domain / infrastructure per module |
-| archive → gameplay | archive imports `RedisRooms` for key helpers; the checker map still allows the edge | archive derives keys from the contract; the edge leaves the map in the same change |
+| Layers | catalog, identity and archive have the four layers; gameplay is a flat package with the role in the class-name suffix | api / application / domain / infrastructure per module |
 | gameplay stores | `RoomService` runs JDBC for game_room provisioning and calls Redis directly | JDBC and Redis behind ports in `gameplay.infrastructure` |
 | Command pre-validation | Name and PIN checks live in `RoomService` | `gameplay.domain` command types |
-| archive read model | `HistoryController` queries JDBC directly | `History` facade over an archive repository |
 | Layer enforcement | The checker sees only the module segment of an import | A rule for api/infrastructure privacy; ArchUnit needs task authority and an ADR |
 
 ## Module designs
@@ -329,13 +327,21 @@ consumer name is single-instance. This is not a global one-second persistence SL
 
 This gives idempotent database effects under at-least-once delivery, not universal
 exactly-once execution. The terminal event can only commit after preceding versions.
-Steps 2 to 4 are one PostgreSQL transaction in ArchiveTransactions.apply; step 6 is one
-Lua script. HTTP responses and WebSocket sends are outside every transaction.
+Steps 2 to 4 are one PostgreSQL transaction in `application.Projection.apply` over the
+`ArchiveRepository` port. Steps 1, 5 and 6 go through the `RoomEvents` port: its adapter
+`infrastructure.RedisRoomEvents` derives the stream, the active set and the room keys from
+the [Redis room contract](../contracts/redis-room.md#keyspace) and imports nothing from
+gameplay; step 6 is one Lua script there. `application.Archiver.drain` runs the loop, kept
+apart from `Projection` so that `apply` runs through its transactional proxy;
+`infrastructure.ArchiveWorker` only schedules it. HTTP responses and WebSocket sends are
+outside every transaction.
 
 #### Boundaries and limitations
 
 Archive never recomputes score from UI input and cannot invent lost Redis events.
-History queries only expose host-owned rooms and completed results.
+History queries only expose host-owned rooms and completed results: `application.History`
+makes the ROOM_NOT_FOUND and ARCHIVE_NOT_READY decisions over the `HistoryRepository` port,
+whose adapter puts the owner clause in every room query.
 A sequence gap blocks that room; errors are logged and later retried.
 No poison-event quarantine or multi-consumer claiming is implemented.
 

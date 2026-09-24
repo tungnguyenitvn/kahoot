@@ -134,15 +134,15 @@ COMMAND_LIMIT capacity) map to the [acceptance scenarios](architecture/README.md
 | ANSWER-04 | NOT COVERED: RoomStore retry policy has no test harness | none |
 | ANSWER-06 | frontend/tests/room-connection.test.mjs ("socket open sends only SYNC ...", "REVOKED rejects late HTTP result ...") | node --test |
 | ANSWER-07 | NOT COVERED: RoomStore error policy has no test harness | none |
-| HIST-01 | NOT COVERED: cross-owner history access untested | none |
-| HIST-02 | NOT COVERED: ARCHIVE_NOT_READY untested | none |
+| HIST-01 | HistoryTest#resultsAreScopedToTheOwner (facade over an in-memory repository; the SQL owner clause has no separate test) | scripts/test |
+| HIST-02 | HistoryTest#unfinishedRoomIsNotReady | scripts/test |
 | HIST-04 | NOT COVERED: reading results after Redis key cleanup untested | none |
 | LIVE-01 | GameIntegrationTest#realCookiesCsrfAuthorizationReconnectAndArchiveReplay (stranger gets 403); GameIntegrationTest#websocketAuthenticatesByCookiePushesStateAndRejectsMutations (no session or bad Origin refused); GameIntegrationTest#deadlineMembershipAndNameChecksDoNotDependOnPostgres (intruder snapshot denied); scripts/test-room.lua membership check | scripts/test, Lua smoke |
 | LIVE-02 | GameIntegrationTest#deadlineMembershipAndNameChecksDoNotDependOnPostgres (DEADLINE_PASSED, timer reveal); scripts/test-room.lua "deadline equality rejects even before the timer runs", "room expiry finalizes once" | scripts/test, Lua smoke |
 | LIVE-03 | GameIntegrationTest#parallelRetriesProduceOneReceiptOneScoreAndOneAnswerEvent, #parallelCorrectPlayersGetDistinctRanksAndTierScores, #receiptSurvivesRoundTransitionAndConflictingAnswerIsRejected; scripts/test-room.lua "retries preserve receipt ...", "wrong answers do not consume a correct rank ..." | scripts/test, Lua smoke |
 | LIVE-04 | GameIntegrationTest#scoreAndCorrectOptionStayHiddenUntilReveal; scripts/test-room.lua "answer receipt and live snapshot hide result until reveal"; frontend/tests/room-state.test.mjs snapshot validator | scripts/test, Lua smoke, node --test |
 | LIVE-05 | GameIntegrationTest#websocketAuthenticatesByCookiePushesStateAndRejectsMutations (READ_ONLY_CHANNEL, STATE after a REST command); RoomWebSocketHubTest#burstAndSyncDoNotSpawnAnotherSnapshotWhileOneIsRunning (coalescing keeps the newest state); frontend/tests/room-connection.test.mjs ("LIVE-05 default timers call the globals without an object receiver", reconciliation must start in a real browser) | scripts/test, node --test |
-| LIVE-06 | GameIntegrationTest#realCookiesCsrfAuthorizationReconnectAndArchiveReplay (archive replay of an applied event is a no-op; FINISHED archived) | scripts/test |
+| LIVE-06 | GameIntegrationTest#realCookiesCsrfAuthorizationReconnectAndArchiveReplay (archive replay of an applied event is a no-op; FINISHED archived); ProjectionTest#replayIsANoOpAndGapsAreRejected (version gate and projection order over an in-memory repository) | scripts/test |
 | LIVE-07 | GameIntegrationTest#corruptKeyTypeIsRejectedBeforeAnyMutation; scripts/test-room.lua "corrupt type fails before writes"; the ROOM_STATE_LOST path is untested | scripts/test, Lua smoke |
 
 Browser E2E, slow-network load, Redis loss/OOM and full outage/recovery campaigns

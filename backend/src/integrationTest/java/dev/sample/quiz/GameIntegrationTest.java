@@ -1,6 +1,7 @@
 package dev.sample.quiz;
 
-import dev.sample.quiz.archive.ArchiveTransactions;
+import dev.sample.quiz.archive.application.Projection;
+import dev.sample.quiz.archive.domain.RoomEvent;
 import dev.sample.quiz.gameplay.RedisRooms;
 import dev.sample.quiz.shared.ApiException;
 import org.junit.jupiter.api.*;
@@ -24,7 +25,7 @@ class GameIntegrationTest {
     @Autowired StringRedisTemplate redis;
     @Autowired ObjectMapper json;
     @Autowired JdbcTemplate db;
-    @Autowired ArchiveTransactions archive;
+    @Autowired Projection projection;
     @Value("${local.server.port}") int port;
     private final List<String> fixtures=new ArrayList<>();
     private final String host="U:"+UUID.randomUUID();
@@ -198,7 +199,7 @@ class GameIntegrationTest {
         assertFalse(listed.path("finishedAt").isMissingNode()||listed.path("finishedAt").isNull(),listed.toString());
         assertFalse(listed.has("archived_version")||listed.has("created_at")||listed.has("finished_at"),listed.toString()); // camelCase per conventions
         var event=db.queryForMap("select stream_id,payload from game_event where room_id=? and kind='ANSWERED'",UUID.fromString(id));
-        archive.apply(id,event.get("stream_id").toString(),json.readTree(event.get("payload").toString()));
+        projection.apply(id,event.get("stream_id").toString(),RoomEvent.of(json.readValue(event.get("payload").toString(),Map.class)));
         assertEquals(1,db.queryForObject("select count(*) from answer where room_id=?",Integer.class,UUID.fromString(id)));
         assertEquals(1000,owner.get("/api/history/"+id).get(0).path("score").asInt());
         assertEquals(204,owner.request("POST","/api/auth/logout","{}",true).statusCode());
