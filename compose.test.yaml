@@ -32,7 +32,7 @@ services:
     init: true
     # node_modules stays in a named volume for speed; the npm download cache is bind-mounted for CI restore.
     volumes: [./frontend:/app, frontend-modules:/app/node_modules, ./.cache/npm:/root/.npm, ./:/repo:ro]
-    command: [sh, -c, "node /repo/scripts/check-docs.mjs && npm test && npm run build"]
+    command: [sh, -c, "node /repo/scripts/check-docs.mjs && node --test /repo/scripts/check-docs.test.mjs && npm test && npm run build"]
   lua-smoke:
     build: {context: ./scripts, dockerfile: lua.Dockerfile}
     volumes: [./:/repo:ro]
