@@ -92,12 +92,13 @@ that only asks to review files.
 | Gate | Command | What it proves / does not prove |
 |---|---|---|
 | Offline policy/lifecycle | node --test "frontend/tests/**/*.test.mjs" | Version/ranking + injected connection lifecycle; NOT Angular/browser behavior |
+| Angular component specs | npm run test:ui (ng test, Vitest + jsdom, frontend-test stage) | Route guards, Signal Forms and template interaction with mocked HTTP and store; NOT a real browser, nginx or WebSocket |
 | Lua smoke | scripts/test-room.lua, run by scripts/verify in a Lua 5.4 container (lua-smoke service); locally texlua or any Lua 5.3/5.4 | Sequential invariants with Redis double; NOT Redis concurrency/durability |
 | Documentation checks | node scripts/check-docs.mjs | Local links and documentation boundary rules; NOT semantic completeness |
 | Documentation lint self-test | node --test scripts/check-docs.test.mjs | The lint's own rules against fixture trees (module matrix, unknown package, composition root, layer directions and privacy, frontend folder boundaries); NOT the repository content |
 | Backend unit | Docker scripts/test or Gradle test in configured JDK | Mockito fault injection/coalescing tests; NOT real services |
 | Backend integration | scripts/test | Real HTTP/cookies/WS/Redis/SQL behavior in isolated services |
-| Full gate | scripts/verify | Lua smoke, backend tests/package, documentation check and its self-test, Angular tests/build |
+| Full gate | scripts/verify | Lua smoke, backend tests/package, documentation check and its self-test, Node policy tests, Angular component specs and build |
 
 Read the [verification status](#gate-status) for the latest executed
 result per gate. Never infer pass from the presence or name of a test.
@@ -114,15 +115,15 @@ COMMAND_LIMIT capacity) map to the [acceptance scenarios](architecture/README.md
 | ID | Test | Gate |
 |---|---|---|
 | LOGIN-01 | GameIntegrationTest#realCookiesCsrfAuthorizationReconnectAndArchiveReplay (cookie session is recognized as host after login) | scripts/test |
-| LOGIN-02 | NOT COVERED: Angular route guard needs browser E2E | none |
+| LOGIN-02 | src/app/core/host.guard.spec.ts ("LOGIN-02 STUDIO-01 a guest asking for /host lands on /login") | npm run test:ui |
 | LOGIN-03 | GameIntegrationTest#realCookiesCsrfAuthorizationReconnectAndArchiveReplay (logout returns 204, next host request 401) | scripts/test |
-| LOGIN-04 | NOT COVERED: login form state needs browser E2E | none |
+| LOGIN-04 | src/app/features/login/login.page.spec.ts ("LOGIN-04 a failed login shows the error, stays on the route, keeps the username") | npm run test:ui |
 | LOGIN-05 | frontend/tests/login/login-template.test.mjs ("LOGIN-05 login template embeds no demo credentials") | node --test |
-| JOIN-01 | NOT COVERED: form validation needs browser E2E | none |
+| JOIN-01 | src/app/features/entry/entry.page.spec.ts ("JOIN-01 a PIN that is not six digits keeps submit disabled and never calls the API") | npm run test:ui |
 | JOIN-02 | GameIntegrationTest#deadlineMembershipAndNameChecksDoNotDependOnPostgres; scripts/test-room.lua "membership, host authority, revoked access and name uniqueness" | scripts/test, Lua smoke |
 | JOIN-03 | GameIntegrationTest#realCookiesCsrfAuthorizationReconnectAndArchiveReplay (snapshot after answer returns the session's receipt) | scripts/test |
 | JOIN-04 | GameIntegrationTest#realCookiesCsrfAuthorizationReconnectAndArchiveReplay (guest start returns 403); scripts/test-room.lua HOST_REQUIRED check; IdentitiesTest#hostRequiresAnAccount (a guest identity never passes host()) | scripts/test, Lua smoke |
-| STUDIO-01 | NOT COVERED: route guard needs browser E2E; the API-level 401 for guests is covered under LOGIN-03 | none |
+| STUDIO-01 | src/app/core/host.guard.spec.ts (Studio never renders for a guest); the API-level 401 for guests is covered under LOGIN-03 | npm run test:ui |
 | STUDIO-02 | DraftTest#rejectsMissingTitleQuestionsOrOptions and #keepsValidContent (domain invariants; the HTTP 400 mapping of the same bounds has no separate test) | scripts/test |
 | STUDIO-03 | QuizCatalogTest#publishIsScopedToTheOwner (application facade over an in-memory repository; the SQL owner clause has no separate test) | scripts/test |
 | STUDIO-04 | NOT COVERED: no edit API exists yet, so nothing exercises a later catalog change | none |
@@ -130,7 +131,7 @@ COMMAND_LIMIT capacity) map to the [acceptance scenarios](architecture/README.md
 | ROOM-03 | GameIntegrationTest#receiptSurvivesRoundTransitionAndConflictingAnswerIsRejected; scripts/test-room.lua "retry of previous round cannot score or advance the new round" | scripts/test, Lua smoke |
 | ROOM-04 | frontend/tests/app/index-base-href.test.mjs ("ROOM-04 index.html declares base href", a reload on a deep route loads the bundle); scripts/smoke-release deep-link check in CI. The pending-command memory part has no test harness | node --test, ci release images |
 | ROOM-07 | frontend/tests/room/room-connection.test.mjs ("ROOM-07 capacity refusal (close 1012) schedules no retry timer ..."); RoomWebSocketHubTest#registrationRefusesRoomCapacityBeforeSchedulingWork (server side of the refusal) | node --test, scripts/test |
-| ANSWER-01 | NOT COVERED: template interaction needs browser E2E | none |
+| ANSWER-01 | src/app/features/room/room.page.spec.ts ("ANSWER-01 an active player picks an option in the open question and sends it through the store") | npm run test:ui |
 | ANSWER-04 | frontend/tests/room/answer-policy.test.mjs ("ANSWER-04 a retry reuses the original option, round and commandId", "ANSWER-04 a new round drops a stale pending answer"); the store wires the policy, its own signals have no harness | node --test |
 | ANSWER-06 | frontend/tests/room/room-connection.test.mjs ("socket open sends only SYNC ...", "REVOKED rejects late HTTP result ...") | node --test |
 | ANSWER-07 | frontend/tests/room/answer-policy.test.mjs ("ANSWER-07 network failures, 5xx, 408 and 429 keep the pending answer") | node --test |
@@ -159,10 +160,10 @@ the tree is clean for it, so the gate never blocks on pre-existing debt.
 | links | Every local link and anchor resolves; architecture pages carry no wire examples |
 | L1 | Every document under docs/ is linked from docs/README.md or from the README.md of its directory |
 | L2 | Each acceptance ID (PREFIX-NN bullet in features/ or domain.md) is defined once and retired IDs are not redefined |
-| L3 | Each acceptance ID has a row in the traceability table above; a covered row must be greppable in test sources |
+| L3 | Each acceptance ID has a row in the traceability table above; a covered row must be greppable in test sources (backend tests, frontend/tests, *.spec.ts under frontend/src/app, the Lua smoke) |
 | L4 | A numeric limit appears only in its owner document; other documents link to it |
 | L5 | Each ADR has an index row whose Status matches the file |
-| frontend | Under frontend/src/app, features import only core and shared, core only shared, shared nothing in the application; features never import each other or the app root; a policy module (.mjs) imports only other .mjs modules |
+| frontend | Under frontend/src/app, features import only core and shared, core only shared, shared nothing in the application; features never import each other or the app root; a policy module (.mjs) imports only other .mjs modules; *.spec.ts files are exempt |
 | imports | Java imports follow the module matrix in [backend architecture](architecture/backend.md); a package outside the matrix fails until it is registered there and in the map; inside a layered module the layer directions hold (api → application → domain, infrastructure → application and domain, domain imports the JDK and domain types only) and another module never imports api or infrastructure |
 
 The three AGENTS files and the GitHub templates are linted too.
@@ -308,13 +309,14 @@ change does.
 
 | Gate | Command | Latest result | Revision | Environment | Date | Run |
 |---|---|---|---|---|---|---|
-| Lua smoke | scripts/test-room.lua (lua-smoke stage) | PASS 10/10 | 5893f88 | Alpine 3.21 + Lua 5.4 container | 2026-09-24 | local scripts/verify |
-| Backend unit + integration | backend-test stage (clean test integrationTest bootJar) | PASS unit 17/17, integration 10/10, bootJar built | 5893f88 | Docker Desktop 29.7.2, eclipse-temurin:24-jdk, postgres:17-alpine, redis:7.4-alpine | 2026-09-24 | local scripts/verify |
-| Documentation lint | node scripts/check-docs.mjs (frontend-test stage) | PASS 37 documents, 243 links; rules links, wire, imports, frontend and L1 to L5 in fail mode, 0 warnings | 5893f88 | node:24.15.0 container | 2026-09-24 | local scripts/verify |
-| Documentation lint self-test | node --test scripts/check-docs.test.mjs (frontend-test stage) | PASS 12/12 | 5893f88 | node:24.15.0 container | 2026-09-24 | local scripts/verify |
-| Offline policy/lifecycle | node --test "frontend/tests/**/*.test.mjs" (frontend-test stage) | PASS 19/19 | 5893f88 | node:24.15.0 container | 2026-09-24 | local scripts/verify |
-| Angular build | npm run build (frontend-test stage) | PASS, application bundle generated | 5893f88 | node:24.15.0 container, Angular 22 | 2026-09-24 | local scripts/verify |
-| Full gate | ./scripts/verify | PASS, all stages above | 5893f88 | macOS host, Docker Desktop 29.7.2 | 2026-09-24 | local |
+| Lua smoke | scripts/test-room.lua (lua-smoke stage) | PASS 10/10 | d38e732 | Alpine 3.21 + Lua 5.4 container | 2026-09-24 | local scripts/verify |
+| Backend unit + integration | backend-test stage (clean test integrationTest bootJar) | PASS unit 17/17, integration 10/10, bootJar built | d38e732 | Docker Desktop 29.7.2, eclipse-temurin:24-jdk, postgres:17-alpine, redis:7.4-alpine | 2026-09-24 | local scripts/verify |
+| Documentation lint | node scripts/check-docs.mjs (frontend-test stage) | PASS 37 documents, 243 links; rules links, wire, imports, frontend and L1 to L5 in fail mode, 0 warnings | d38e732 | node:24.15.0 container | 2026-09-24 | local scripts/verify |
+| Documentation lint self-test | node --test scripts/check-docs.test.mjs (frontend-test stage) | PASS 12/12 | d38e732 | node:24.15.0 container | 2026-09-24 | local scripts/verify |
+| Offline policy/lifecycle | node --test "frontend/tests/**/*.test.mjs" (frontend-test stage) | PASS 19/19 | d38e732 | node:24.15.0 container | 2026-09-24 | local scripts/verify |
+| Angular component specs | npm run test:ui (frontend-test stage) | PASS 5/5 in 4 files | d38e732 | node:24.15.0 container, Vitest 4.1, jsdom 30 | 2026-09-24 | local scripts/verify |
+| Angular build | npm run build (frontend-test stage) | PASS, application bundle generated | d38e732 | node:24.15.0 container, Angular 22 | 2026-09-24 | local scripts/verify |
+| Full gate | ./scripts/verify | PASS, all stages above | d38e732 | macOS host, Docker Desktop 29.7.2 | 2026-09-24 | local |
 | Release stack smoke | scripts/smoke-release | PASS: SPA served, /api proxied, CSRF enforced through nginx | 8ce5941 | macOS host, Docker Desktop 29.7.2, images built from Dockerfile.release | 2026-09-23 | local |
 | CI (GitHub Actions) | .github/workflows/ci.yml | PASS with warm caches: "verify gate" 118 s (Gradle build 35 s, npm install 7 s, both caches hit), "release images from verified artifacts" 47 s. Cold-cache run 35892588183: 170 s and 44 s. Before ADR 0007: 189 s and 131 s (run 35891087371). Two earlier runs failed at startup while Actions was disabled for the account; fixed by the owner on 2026-09-23 | 82dc8b0 | ubuntu-latest runner, Docker from the runner image, actions on Node 24 | 2026-09-24 | https://github.com/tungnguyenitvn/kahoot/actions/runs/35893152449 |
 | Release (GitHub Actions) | .github/workflows/release.yml | PASS for tag v0.2.2, started by the tag push: verify, package, smoke, images pushed as ghcr.io/tungnguyenitvn/kahoot-backend and kahoot-frontend (v0.2.2 and latest, anonymously pullable), GitHub Release with quiz-room-v0.2.2.jar. Earlier: v0.2.1 (run 35899396562, 164 s) and v0.2.0 (run 35896369794, dispatched by hand because the tagged commit carried [skip ci]). v0.2.0 and v0.2.1 are superseded: their frontend fails in a browser (see the next row) | 0e2ef6e (tag v0.2.2) | ubuntu-latest runner, Docker from the runner image | 2026-09-24 | https://github.com/tungnguyenitvn/kahoot/actions/runs/35900688309 |

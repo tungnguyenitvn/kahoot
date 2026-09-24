@@ -111,8 +111,9 @@ The rules are in the [frontend architecture](docs/architecture/frontend.md).
 5. Never import another feature; move what both need to `core` or `shared`. The lint
    rule `frontend` fails on a feature-to-feature import, on `core` importing a feature,
    and on a `.mjs` policy module importing anything but another `.mjs`.
-6. Tests in `frontend/tests/<name>/`, names carrying the IDs; run `npm test` and
-   `npm run build`.
+6. Policy tests in `frontend/tests/<name>/`; a template or guard behavior gets a
+   `<name>.page.spec.ts` beside the page (Vitest + jsdom, no browser); names carry the
+   IDs; run `npm test`, `npm run test:ui` and `npm run build`.
 7. A feature document with acceptance IDs ([feature index](docs/features/README.md)).
 
 ## 5. Run the gates before you push
@@ -121,7 +122,7 @@ The rules are in the [frontend architecture](docs/architecture/frontend.md).
 node scripts/check-docs.mjs
 node --test scripts/check-docs.test.mjs
 node --test "frontend/tests/**/*.test.mjs"
-./scripts/verify
+./scripts/verify   # also runs the Angular component specs (npm run test:ui, Vitest in the container)
 ```
 
 `./scripts/verify` is the same gate CI runs (Lua smoke, backend unit and integration
