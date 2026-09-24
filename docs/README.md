@@ -46,7 +46,9 @@ and a screen may contain several features.
 ## Contracts
 
 Hand-maintained Markdown, not generated OpenAPI or AsyncAPI; implementation and
-tests are reviewed with every contract change. Wire examples live only here.
+tests are reviewed with every contract change, and the triggers for moving to a
+generated schema are in [ADR 0013](adr/0013-contracts-as-reviewed-markdown.md).
+Wire examples live only here.
 
 | Boundary | Canonical definition |
 |---|---|
