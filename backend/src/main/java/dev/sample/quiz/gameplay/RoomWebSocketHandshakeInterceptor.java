@@ -9,15 +9,16 @@ import org.springframework.http.server.ServletServerHttpRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.socket.WebSocketHandler;
 import org.springframework.web.socket.server.HandshakeInterceptor;
+import dev.sample.quiz.gameplay.application.RoomCommands;
 import dev.sample.quiz.identity.application.Identities;
 import dev.sample.quiz.identity.domain.Identity;
 import dev.sample.quiz.shared.ApiException;
 
 public class RoomWebSocketHandshakeInterceptor implements HandshakeInterceptor {
-    private final RedisRooms rooms;
+    private final RoomCommands rooms;
     private final Identities identities;
 
-    public RoomWebSocketHandshakeInterceptor(RedisRooms rooms, Identities identities) {
+    public RoomWebSocketHandshakeInterceptor(RoomCommands rooms, Identities identities) {
         this.rooms = rooms;
         this.identities = identities;
     }

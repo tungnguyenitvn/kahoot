@@ -127,8 +127,8 @@ repeated elsewhere. Change a value here and in its source in the same change.
 | Setting | Value | Source |
 |---|---|---|
 | Participants, questions, options, seconds per question, room expiry, score tiers | game rules | [domain](../domain.md) |
-| PIN reservation TTL | 2 h from reservation | RoomService.reservePin |
-| Active-room admission | 100 active rooms per Redis, advisory check | RoomService.create |
+| PIN reservation TTL | 2 h from reservation | RedisRoomRegistry.reservePin |
+| Active-room admission | 100 active rooms per Redis, advisory check | Rooms.create |
 | Host command ledger | 500 entries per room, then COMMAND_LIMIT | room.lua |
 | Room key retention | 24 h, starting at final archive commit | RedisRoomEvents.finish |
 | HTTP session timeout | 4 h | application.yml |
@@ -142,7 +142,7 @@ repeated elsewhere. Change a value here and in its source in the same change.
 | WebSocket control replies | at most 1 PONG/ERROR per second per connection | RoomWebSocketHub |
 | WebSocket send guard | 10 s send time, 256 KB buffer per session | RoomWebSocketHub |
 | WebSocket inbound text | wire bound owned by the [WebSocket contract](../contracts/websocket.md) | RoomWebSocketHub |
-| PIN reservation attempts | 100 random PINs per room creation, then PIN_UNAVAILABLE | RoomService.reservePin |
+| PIN reservation attempts | 100 random PINs per room creation, then PIN_UNAVAILABLE | RedisRoomRegistry.reservePin |
 | Client REST reconciliation | every 5 s while the room route is open | room-connection.mjs |
 | Client reconnect backoff | 500 ms doubling to a 10 s cap, jitter factor 0.8–1.2 | room-connection.mjs |
 | Client clock refresh | every 100 ms | room-store.ts |

@@ -20,14 +20,16 @@ import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.ConcurrentWebSocketSessionDecorator;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
+import dev.sample.quiz.gameplay.application.Notifier;
+import dev.sample.quiz.gameplay.application.RoomCommands;
 import dev.sample.quiz.identity.application.Sessions;
 import dev.sample.quiz.shared.ApiException;
 
 @Component
-public class RoomWebSocketHub {
+public class RoomWebSocketHub implements Notifier {
     private static final int MAX_CLIENTS = 1000;
     private static final int MAX_CLIENTS_PER_ROOM = 150;
-    private final RedisRooms rooms;
+    private final RoomCommands rooms;
     private final ObjectMapper json;
     private final Sessions sessions;
     private final Set<Client> clients = ConcurrentHashMap.newKeySet();
@@ -37,11 +39,11 @@ public class RoomWebSocketHub {
     private volatile boolean stopped;
 
     @Autowired
-    public RoomWebSocketHub(RedisRooms rooms, ObjectMapper json, Sessions sessions) {
+    public RoomWebSocketHub(RoomCommands rooms, ObjectMapper json, Sessions sessions) {
         this(rooms,json,sessions,()->System.nanoTime()/1_000_000);
     }
 
-    RoomWebSocketHub(RedisRooms rooms, ObjectMapper json, Sessions sessions, LongSupplier nowMillis) {
+    RoomWebSocketHub(RoomCommands rooms, ObjectMapper json, Sessions sessions, LongSupplier nowMillis) {
         this.rooms = rooms;
         this.json = json;
         this.sessions = sessions;

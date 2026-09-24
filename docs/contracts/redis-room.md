@@ -1,6 +1,6 @@
 # Redis room and event contract
 
-Private protocol between gameplay's RedisRooms, room.lua and archive's RedisRoomEvents,
+Private protocol between gameplay's LuaRooms, room.lua and archive's RedisRoomEvents,
 which build the same key names from this page. Do not expose these raw values to browsers. Deployment supported: Redis standalone only.
 
 ## Keyspace

@@ -6,6 +6,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import dev.sample.quiz.gameplay.application.RoomCommands;
 import dev.sample.quiz.identity.application.Sessions;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.CloseStatus;
@@ -23,7 +24,7 @@ class RoomWebSocketHubTest {
     @Test @SuppressWarnings("unchecked")
     @DisplayName("LIVE-05 burst and SYNC do not spawn another snapshot while one is running; the newest state still ships")
     void burstAndSyncDoNotSpawnAnotherSnapshotWhileOneIsRunning() throws Exception {
-        var rooms=mock(RedisRooms.class);Sessions sessions=mock(Sessions.class);
+        var rooms=mock(RoomCommands.class);Sessions sessions=mock(Sessions.class);
         when(sessions.live("session")).thenReturn(true);
         var entered=new CountDownLatch(1);var release=new CountDownLatch(1);var now=new AtomicLong(1000);
         when(rooms.command(anyString(),eq("snapshot"),anyString(),any())).thenAnswer(call->{
@@ -37,7 +38,7 @@ class RoomWebSocketHubTest {
     }
     @Test @SuppressWarnings("unchecked")
     void globalPermitBoundPreventsUnboundedTaskSubmission() throws Exception {
-        var rooms=mock(RedisRooms.class);Sessions sessions=mock(Sessions.class);
+        var rooms=mock(RoomCommands.class);Sessions sessions=mock(Sessions.class);
         when(sessions.live("session")).thenReturn(true);
         var entered=new CountDownLatch(16);var release=new CountDownLatch(1);
         when(rooms.command(anyString(),eq("snapshot"),anyString(),any())).thenAnswer(call->{
@@ -51,7 +52,7 @@ class RoomWebSocketHubTest {
     }
     @Test @SuppressWarnings("unchecked")
     void expiredSessionIsRevokedBeforeReadingRoom() throws Exception {
-        var rooms=mock(RedisRooms.class);Sessions sessions=mock(Sessions.class);
+        var rooms=mock(RoomCommands.class);Sessions sessions=mock(Sessions.class);
         var hub=new RoomWebSocketHub(rooms,new ObjectMapper(),sessions,()->1000L);var socket=socket("expired");
         try {hub.register(socket);hub.flush();verify(socket,timeout(2000)).close(CloseStatus.POLICY_VIOLATION);verifyNoInteractions(rooms);}
         finally {hub.close();}
@@ -59,7 +60,7 @@ class RoomWebSocketHubTest {
     @Test @SuppressWarnings("unchecked")
     @DisplayName("ROOM-07 registration refuses room capacity before scheduling work and closes with 1012")
     void registrationRefusesRoomCapacityBeforeSchedulingWork() throws Exception {
-        var rooms=mock(RedisRooms.class);Sessions sessions=mock(Sessions.class);
+        var rooms=mock(RoomCommands.class);Sessions sessions=mock(Sessions.class);
         var hub=new RoomWebSocketHub(rooms,new ObjectMapper(),sessions,()->1000L);
         try {
             for(int i=0;i<150;i++)hub.register(socket("s"+i));var extra=socket("extra");hub.register(extra);
