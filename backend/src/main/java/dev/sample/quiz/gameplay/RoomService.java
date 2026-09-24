@@ -9,7 +9,8 @@ import org.springframework.stereotype.Service;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 import dev.sample.quiz.identity.Identity;
-import dev.sample.quiz.catalog.QuizCatalog;
+import dev.sample.quiz.catalog.application.QuizCatalog;
+import dev.sample.quiz.catalog.domain.QuizStatus;
 import dev.sample.quiz.shared.ApiException;
 @Service
 public class RoomService {
@@ -23,7 +24,7 @@ public class RoomService {
         if(existing.isEmpty()){
             if(Optional.ofNullable(redis.opsForSet().size(RedisRooms.ACTIVE)).orElse(0L)>=100)throw new ApiException(503,"ROOM_LIMIT");
             var quiz=catalog.get(owner,quizId);
-            if(!quiz.status().equals("PUBLISHED"))throw new ApiException(409,"QUIZ_NOT_PUBLISHED");
+            if(quiz.status()!=QuizStatus.PUBLISHED)throw new ApiException(409,"QUIZ_NOT_PUBLISHED");
             String pin=reservePin(id.toString());
             List<Map<String,Object>> questions=quiz.questions().stream().map(q->{
                 Map<String,Object> m=new LinkedHashMap<>();m.put("roundId",UUID.randomUUID().toString());m.put("text",q.text());m.put("options",q.options());m.put("correctOption",q.correctOption());m.put("seconds",q.seconds());return m;

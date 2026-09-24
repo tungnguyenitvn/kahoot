@@ -14,7 +14,7 @@ to [conventions](../development.md#conventions) and every numeric value to the
 | Module | Bounded context | Public surface | Design |
 |---|---|---|---|
 | identity | Host accounts, guest and host session identity, HTTP security | `Identity` value; `Accounts` facade (register, look up); `Sessions` port (liveness) | [identity/catalog](#identity-and-catalog) |
-| catalog | Host-owned draft and published quizzes | `QuizCatalog` facade and `Quiz` read model | [identity/catalog](#identity-and-catalog) |
+| catalog | Host-owned draft and published quizzes | `application.QuizCatalog` facade; `domain.Quiz`, `Question`, `Draft`, `QuizStatus` | [identity/catalog](#identity-and-catalog) |
 | gameplay | Room provisioning, live commands, snapshots, realtime delivery | `Rooms` facade (create, join, snapshot, answer, control) | [gameplay](#gameplay), [realtime](#realtime-delivery) |
 | archive | Ordered event projection and host history | `History` read facade | [archive](#archive) |
 | shared | Technical policy: API error mapping, scheduling, store configuration | Exceptions and configuration | none |
@@ -174,7 +174,7 @@ it from this table.
 
 | Gap | Current state | Target |
 |---|---|---|
-| Layers | Modules are flat packages; role is a class-name suffix | api / application / domain / infrastructure per module |
+| Layers | catalog has the four layers; identity, gameplay and archive are flat packages with the role in the class-name suffix | api / application / domain / infrastructure per module |
 | archive → gameplay | archive imports `RedisRooms` for key helpers; the checker map still allows the edge | archive derives keys from the contract; the edge leaves the map in the same change |
 | bootstrap → app_user | `DemoSeed` inserts the demo account with SQL | identity exposes `Accounts` |
 | gameplay stores | `RoomService` runs JDBC for game_room provisioning and calls Redis directly | JDBC and Redis behind ports in `gameplay.infrastructure` |
@@ -205,9 +205,15 @@ HTTP mutations. Logout/session invalidation is rechecked before snapshot sending
 
 #### Catalog
 
-Host ownership is derived from identity, never client ownerId. QuizCatalog validates
-a draft with bounded title/questions/options/duration, stores JSONB in PostgreSQL,
-and publishes status. Publish may be repeated; published content has no edit API.
+Host ownership is derived from identity, never client ownerId. `domain.Draft` and
+`domain.Question` enforce the bounded title, question count, options and duration in
+their constructors, so no layer can build an invalid quiz; `api.QuizController` repeats
+the same bounds as request annotations that reference the domain constants, which turns
+a bad body into INVALID_REQUEST before the domain is touched. `application.QuizCatalog`
+owns the transaction and the not-found decision over the `QuizRepository` port;
+`infrastructure.JdbcQuizRepository` stores the draft as JSONB in PostgreSQL. Responses
+serialize the domain read model; a response record appears only when wire and domain
+diverge. Publish may be repeated; published content has no edit API.
 
 Creating a room freezes quiz content with generated round IDs. Catalog is not
 consulted during answers. Draft POST has no idempotency key, unlike room creation.
