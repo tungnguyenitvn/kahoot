@@ -32,7 +32,7 @@ Lua atomicity prevents interleaving but does not provide rollback after runtime 
 
 Cross-feature invariants with stable IDs. Feature documents and tests reference these IDs instead of restating the rule; duplicates that were folded into them are listed under [retired IDs](features/README.md#retired-ids).
 
-- LIVE-01: An authenticated owner opens a room from a frozen published quiz; a guest session joins atomically by PIN and nickname. The PIN never grants read or host authorization.
+- LIVE-01: An authenticated owner opens a room from a frozen published quiz: the room keeps its own copy of the questions, so nothing that happens to the catalog afterwards reaches it; a guest session joins atomically by PIN and nickname. The PIN never grants read or host authorization.
 - LIVE-02: Room phases change only along the [state transitions](#state-transitions); expiry can finish a room from any phase that is not FINISHED and skips REVEAL. Deadline and correct-answer order are server decisions, never browser time.
 - LIVE-03: Accepted answer effects occur once per participant and round: resubmitting the same option returns the original acceptance, a different option is rejected without a new score or event, concurrent correct answers receive distinct orders, and wrong answers consume only the attempt.
 - LIVE-04: While a question is open, no response exposes the correct option, unrevealed points or rank; acceptance itself does not disclose correctness or points before reveal.
