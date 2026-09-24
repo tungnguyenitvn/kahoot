@@ -30,7 +30,7 @@ the order in which correct answers are accepted by the server.
 
 ### Constraints and non-goals
 
-Java 24, Gradle, Spring Boot, Angular 22, Redis standalone, PostgreSQL and Docker
+Java 25, Gradle, Spring Boot, Angular 22, Redis standalone, PostgreSQL and Docker
 Compose. One backend instance and one scheduled archive consumer are supported.
 Exact score/capacity/deadline rules belong to [domain](../domain.md).
 
@@ -186,8 +186,6 @@ rate. Set thresholds with the product owner BEFORE the load run, not afterwards.
 - JDBC/Redis pool sizing, session fixation effects on active WS and cross-tab logout
   need production-specific testing.
 - Draft save is not server-idempotent; ambiguous timeouts require catalog inspection.
-- Java 24 is a non-LTS release pinned by the build, Dockerfile and docs; it moves to
-  the LTS with the next toolchain change ([ADR 0011](../adr/0011-java-24-until-the-next-toolchain-change.md)).
 
 Each unresolved item must stay visible until code and appropriate evidence exist.
 See the [verification status](../development.md#gate-status).

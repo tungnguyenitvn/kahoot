@@ -3,7 +3,7 @@
 [![ci](https://github.com/tungnguyenitvn/kahoot/actions/workflows/ci.yml/badge.svg)](https://github.com/tungnguyenitvn/kahoot/actions/workflows/ci.yml)
 [![release](https://github.com/tungnguyenitvn/kahoot/actions/workflows/release.yml/badge.svg)](https://github.com/tungnguyenitvn/kahoot/actions/workflows/release.yml)
 
-Sample end-to-end dùng **Java 24 + Spring Boot 4.1.1 + Gradle 8.14.3 + Angular 22**. Host tạo quiz, mở phòng; người chơi vào bằng PIN, trả lời theo thứ tự và nhận điểm theo bậc. REST xử lý command; WebSocket phát state realtime. Redis giữ trạng thái live và leaderboard, PostgreSQL giữ tài khoản, quiz bất biến và lịch sử.
+Sample end-to-end dùng **Java 25 + Spring Boot 4.1.1 + Gradle 9.7.1 + Angular 22**. Host tạo quiz, mở phòng; người chơi vào bằng PIN, trả lời theo thứ tự và nhận điểm theo bậc. REST xử lý command; WebSocket phát state realtime. Redis giữ trạng thái live và leaderboard, PostgreSQL giữ tài khoản, quiz bất biến và lịch sử.
 
 ## Chạy bằng Docker
 
@@ -16,7 +16,7 @@ docker compose up               # PostgreSQL, Redis, backend, Angular
 
 Mở `http://localhost:4200`; health endpoint của backend là `http://localhost:8080/actuator/health`. Tài khoản host mặc định là `host@example.test` / `local-quiz-only`. Host vào **Host studio**, tạo quiz tối thiểu một câu, xuất bản rồi mở phòng. Người chơi mở tab khác, nhập PIN sáu chữ số và tên. Dừng bằng `Ctrl+C`; dữ liệu dev nằm trong volume Docker.
 
-Gradle wrapper (`backend/gradlew`, `backend/gradle/wrapper`) và `frontend/package-lock.json` nằm trong cây nguồn; container backend chỉ cần JDK và chạy wrapper đã commit, container frontend dùng `npm ci` khi có lockfile. Chạy công cụ ngoài Docker cần JDK 24, Gradle 8.14.3, Node theo `engines` trong `frontend/package.json` và TypeScript 6.0.x.
+Gradle wrapper (`backend/gradlew`, `backend/gradle/wrapper`) và `frontend/package-lock.json` nằm trong cây nguồn; container backend chỉ cần JDK và chạy wrapper đã commit, container frontend dùng `npm ci` khi có lockfile. Chạy công cụ ngoài Docker cần JDK 25, Gradle 9.7.1, Node theo `engines` trong `frontend/package.json` và TypeScript 6.0.x.
 
 ## Kiểm tra
 
