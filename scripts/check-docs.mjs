@@ -145,12 +145,23 @@ for (const file of walk(adrDir)) {
 // package holds the composition root and is not a module.
 const allowed = { bootstrap: ['identity', 'catalog', 'shared'], identity: ['shared'], catalog: ['identity', 'shared'], gameplay: ['identity', 'catalog', 'shared'], archive: ['identity', 'shared'], shared: [] };
 const source = path.join(root, 'backend/src/main/java/dev/sample/quiz');
+const LAYERS = ['api', 'application', 'domain', 'infrastructure'];
+const PRIVATE_TO = { api: ['infrastructure'], application: ['api', 'infrastructure'], domain: ['api', 'application', 'infrastructure'], infrastructure: ['api'] };
 const unknown = new Set();
 for (const file of walk(source, f => f.endsWith('.java'))) {
   const parts = path.relative(source, file).split(path.sep); if (parts.length === 1) continue;
   const own = parts[0]; if (!allowed[own]) { unknown.add(own); continue; }
-  for (const match of read(file).matchAll(/import\s+dev\.sample\.quiz\.(\w+)\./g)) {
-    if (match[1] !== own && !allowed[own].includes(match[1])) report('imports', `${rel(file)}: forbidden module dependency ${match[1]}`);
+  // Layers (docs/architecture/backend.md): api and infrastructure are private to their module; inside a module
+  // api -> application -> domain and infrastructure -> application, domain; domain imports the JDK and domain types only.
+  const layer = parts.length > 2 && LAYERS.includes(parts[1]) ? parts[1] : null;
+  for (const match of read(file).matchAll(/import\s+(?:static\s+)?([\w.]+)\s*;/g)) {
+    const target = match[1];
+    if (layer === 'domain' && !/^java\./.test(target) && !/^dev\.sample\.quiz\.\w+\.domain\./.test(target)) report('imports', `${rel(file)}: domain imports ${target}; a domain type depends on the JDK and other domain types only`);
+    const module = /^dev\.sample\.quiz\.(\w+)\.(?:(\w+)\.)?/.exec(target); if (!module) continue;
+    const [, other, sub] = module;
+    if (other !== own && !allowed[own].includes(other)) report('imports', `${rel(file)}: forbidden module dependency ${other}`);
+    if (other !== own && (sub === 'api' || sub === 'infrastructure')) report('imports', `${rel(file)}: private layer ${other}.${sub}; another module imports only application and domain`);
+    if (other === own && layer && PRIVATE_TO[layer]?.includes(sub)) report('imports', `${rel(file)}: ${layer} imports ${own}.${sub}; the direction is api -> application -> domain, infrastructure -> application and domain`);
   }
 }
 for (const own of unknown) report('imports', `${rel(path.join(source, own))}: package ${own} is not in the module matrix; register it in docs/architecture/backend.md and in the allowed map`);

@@ -94,7 +94,7 @@ that only asks to review files.
 | Offline policy/lifecycle | node --test frontend/tests/*.test.mjs | Version/ranking + injected connection lifecycle; NOT Angular/browser behavior |
 | Lua smoke | scripts/test-room.lua, run by scripts/verify in a Lua 5.4 container (lua-smoke service); locally texlua or any Lua 5.3/5.4 | Sequential invariants with Redis double; NOT Redis concurrency/durability |
 | Documentation checks | node scripts/check-docs.mjs | Local links and documentation boundary rules; NOT semantic completeness |
-| Documentation lint self-test | node --test scripts/check-docs.test.mjs | The lint's own rules against fixture trees (module matrix, unknown package, composition root); NOT the repository content |
+| Documentation lint self-test | node --test scripts/check-docs.test.mjs | The lint's own rules against fixture trees (module matrix, unknown package, composition root, layer directions and privacy); NOT the repository content |
 | Backend unit | Docker scripts/test or Gradle test in configured JDK | Mockito fault injection/coalescing tests; NOT real services |
 | Backend integration | scripts/test | Real HTTP/cookies/WS/Redis/SQL behavior in isolated services |
 | Full gate | scripts/verify | Lua smoke, backend tests/package, documentation check and its self-test, Angular tests/build |
@@ -162,7 +162,7 @@ the tree is clean for it, so the gate never blocks on pre-existing debt.
 | L3 | Each acceptance ID has a row in the traceability table above; a covered row must be greppable in test sources |
 | L4 | A numeric limit appears only in its owner document; other documents link to it |
 | L5 | Each ADR has an index row whose Status matches the file |
-| imports | Java imports follow the module matrix in [backend architecture](architecture/backend.md); a package outside the matrix fails until it is registered there and in the map |
+| imports | Java imports follow the module matrix in [backend architecture](architecture/backend.md); a package outside the matrix fails until it is registered there and in the map; inside a layered module the layer directions hold (api → application → domain, infrastructure → application and domain, domain imports the JDK and domain types only) and another module never imports api or infrastructure |
 
 The three AGENTS files and the GitHub templates are linted too.
 

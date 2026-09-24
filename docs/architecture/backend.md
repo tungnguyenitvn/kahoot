@@ -42,6 +42,8 @@ Inside a module: api → application → domain, and infrastructure → applicat
 domain. `domain` depends on the JDK only. `application` depends on the ports it
 declares, never on an adapter. Another module may import only `application` facades
 and `domain` public types; `api` and `infrastructure` are private to their module.
+`scripts/check-docs.mjs` enforces these directions on Java imports (rule `imports`);
+a flat module has no layers to check until it moves.
 
 Gameplay exception: the room aggregate's transactional invariants execute in Lua
 (`gameplay/infrastructure`, script on the classpath), not in Java. `gameplay.domain`
@@ -177,7 +179,6 @@ it from this table.
 | Layers | catalog, identity and archive have the four layers; gameplay is a flat package with the role in the class-name suffix | api / application / domain / infrastructure per module |
 | gameplay stores | `RoomService` runs JDBC for game_room provisioning and calls Redis directly | JDBC and Redis behind ports in `gameplay.infrastructure` |
 | Command pre-validation | Name and PIN checks live in `RoomService` | `gameplay.domain` command types |
-| Layer enforcement | The checker sees only the module segment of an import | A rule for api/infrastructure privacy; ArchUnit needs task authority and an ADR |
 
 ## Module designs
 
