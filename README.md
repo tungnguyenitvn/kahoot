@@ -26,6 +26,7 @@ Gradle wrapper (`backend/gradlew`, `backend/gradle/wrapper`) và `frontend/packa
 node scripts/check-docs.mjs    # lint tài liệu, chạy được không cần Docker
 node --test scripts/check-docs.test.mjs   # self-test của lint trên cây fixture
 node --test "frontend/tests/**/*.test.mjs"
+cd frontend && npm run test:ui    # component spec Angular (Vitest + jsdom), cần node_modules
 texlua scripts/test-room.lua . # smoke test Lua với Redis double; texlua hoặc Lua 5.3/5.4 bất kỳ
 ```
 

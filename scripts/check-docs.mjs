@@ -85,9 +85,9 @@ if (fs.existsSync(testingDoc)) {
   const section = read(testingDoc).split(/^#{2,3} Traceability\b.*$/m)[1] ?? '';
   for (const m of section.matchAll(/^\|\s*([A-Z]{2,}-\d{2})\s*\|\s*([^|]*?)\s*\|/gm)) rows.set(m[1], m[2]);
 }
-const testSources = ['backend/src/test', 'backend/src/integrationTest', 'frontend/tests', 'scripts/test-room.lua']
-  .map(p => path.join(root, p)).filter(fs.existsSync)
-  .flatMap(p => fs.statSync(p).isDirectory() ? walk(p, () => true) : [p]).map(read).join('\n');
+const testSources = [['backend/src/test'], ['backend/src/integrationTest'], ['frontend/tests'], ['frontend/src/app', f => f.endsWith('.spec.ts')], ['scripts/test-room.lua']]
+  .map(([p, keep]) => [path.join(root, p), keep ?? (() => true)]).filter(([p]) => fs.existsSync(p))
+  .flatMap(([p, keep]) => fs.statSync(p).isDirectory() ? walk(p, keep) : [p]).map(read).join('\n');
 for (const id of definitions.keys()) {
   const row = rows.get(id);
   if (row === undefined) { report('L3', `${id}: no row in the development.md traceability table`); continue; }
@@ -174,7 +174,7 @@ const zone = file => {
   return parts[0] === 'features' ? `features/${parts[1]}` : parts.length > 1 ? parts[0] : 'app';
 };
 const allowedZones = { app: null, core: ['core', 'shared'], shared: ['shared'] };
-for (const file of walk(appRoot, f => /\.(ts|mts|mjs)$/.test(f))) {
+for (const file of walk(appRoot, f => /\.(ts|mts|mjs)$/.test(f) && !f.endsWith('.spec.ts'))) {
   const own = zone(file), text = stripCode(read(file));
   for (const match of text.matchAll(/^\s*(?:import|export)\b[^;]*?\bfrom\s+['"]([^'"]+)['"]/gm)) {
     const target = match[1];
