@@ -28,7 +28,7 @@ hành duy nhất.
 - Có thể xóa câu trước khi lưu.
 - **Lưu bản nháp** gọi `POST /api/quizzes` và xóa danh sách câu đã lưu sau success; các field editor còn lại giữ nguyên.
 - Quiz đã publish không chỉnh sửa tại chỗ; room copy immutable question content khi
-  được tạo.
+  được tạo, là LIVE-01 trong [domain rules](../domain.md#acceptance-invariants).
 
 ## Open room và idempotency
 
@@ -57,7 +57,6 @@ hành duy nhất.
 - STUDIO-01: Guest không render được Studio qua route guard.
 - STUDIO-02: Không lưu quiz nếu thiếu title, câu hỏi hoặc option.
 - STUDIO-03: Publish chỉ tác động quiz của host hiện tại.
-- STUDIO-04: Room tạo từ quiz published không bị ảnh hưởng bởi thay đổi catalog sau đó.
 - STUDIO-05: Retry open-room không tạo room duplicate.
 
 ## Contracts
