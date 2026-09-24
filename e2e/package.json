@@ -1,0 +1,16 @@
+{
+  "name": "quiz-room-e2e",
+  "private": true,
+  "version": "0.0.0",
+  "description": "Browser check of the published stack; run by hand before a release, never part of scripts/verify or CI.",
+  "scripts": {
+    "test": "playwright test",
+    "install-browser": "playwright install chromium"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.63.0"
+  },
+  "engines": {
+    "node": ">=22.22.3 <23 || >=24.15.0 <25 || >=26 <27"
+  }
+}

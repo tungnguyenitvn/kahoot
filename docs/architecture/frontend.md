@@ -110,7 +110,7 @@ nothing credential-like goes to localStorage.
 | Policy modules | `node --test`, deterministic through injected callbacks and fake timers | npm test |
 | Templates, guards and stores | Component specs beside the page (`*.spec.ts`, Vitest + jsdom): route guards through the real router, Signal Forms, template clicks against a fake store; then `ng build` | npm run test:ui, npm run build |
 | Static invariants | File-content tests: base href, no embedded credentials | npm test |
-| Browser flows | Not covered by a gate: nginx, WebSocket and a real browser are checked by hand on the published stack | none, see [quality risks](README.md#residual-risks--non-goals) |
+| Browser flows | `e2e/run` (Playwright against the release stack) before a release; outside the gate by decision | ./e2e/run, see [gates](../development.md#gates) |
 
 Policy tests live under `frontend/tests/` mirroring `features/`; component specs sit
 beside the page they render; a test name carries the
