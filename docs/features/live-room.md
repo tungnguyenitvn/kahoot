@@ -33,10 +33,10 @@ deadline, receipt, thứ tự đúng và score; Angular chỉ hiển thị autho
 
 - Hiển thị question number, text, options và countdown dựa trên `serverTime/deadline`.
 - Player chọn option ở UI state tạm thời, sau đó gửi answer qua REST.
-- Answer gửi `roundId`, `option` và `commandId`. Server dedupe theo round + participant;
-  `commandId` chỉ là metadata audit ([idempotency contract](../contracts/rest-api.md#idempotency)).
-  Khi response timeout, retry gửi lại đúng option và roundId; client giữ nguyên commandId
-  để đối chiếu.
+- Answer gửi `roundId`, `option` và `commandId`; ý nghĩa từng trường theo
+  [idempotency contract](../contracts/rest-api.md#idempotency), quy tắc dedupe là LIVE-03
+  trong [domain rules](../domain.md#acceptance-invariants). Khi response timeout, retry gửi
+  lại đúng option và roundId; client giữ nguyên commandId để đối chiếu.
 - Sau receipt, lựa chọn bị khóa và hiển thị accepted answer.
 - Host không trả lời; host thấy **Chốt câu & công bố**.
 - `correctOption` là `null`, không hiển thị điểm delta riêng tư trước reveal.
@@ -65,8 +65,9 @@ Dedupe theo room/round/participant và privacy trước reveal là LIVE-03 và L
 - Reveal hiển thị correct option và leaderboard đã công bố.
 - Host thấy **Câu tiếp theo** hoặc **Kết thúc**; control có `roundId` fencing và
   `commandId` idempotency.
-- Finished khóa answer/kick/control và hiển thị kết quả cuối cùng. Room cũng có thể
-  FINISHED do hết hạn ở bất kỳ phase nào; khi đó không có bước reveal riêng.
+- Finished khóa answer/kick/control và hiển thị kết quả cuối cùng. Khi room kết thúc vì
+  hết hạn theo [bảng state transitions](../domain.md#state-transitions), màn hình đi thẳng
+  tới kết quả, không có bước reveal riêng.
 - **Vào phòng khác** quay về Join room.
 
 ## Realtime, reconnect và error
@@ -89,8 +90,7 @@ Dedupe theo room/round/participant và privacy trước reveal là LIVE-03 và L
 - ROOM-07: Khi server đóng socket với close code 1012 vì hết dung lượng, client không
   đặt timer reconnect; lần poll REST kế tiếp mới mở lại socket.
 
-Thứ tự đúng do server quyết định, dedupe answer, privacy trước reveal và fail-closed khi
-mất Redis là các invariant LIVE-02, LIVE-03, LIVE-04 và LIVE-07 trong
+Invariant server áp dụng cho màn hình này: LIVE-02, LIVE-03, LIVE-04 và LIVE-07 trong
 [domain rules](../domain.md#acceptance-invariants).
 
 ## Contracts
