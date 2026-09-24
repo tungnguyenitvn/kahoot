@@ -77,4 +77,4 @@ rate. Set thresholds with the product owner BEFORE the load run, not afterwards.
   decision to a long-term-support release is recorded yet.
 
 Each unresolved item must stay visible until code and appropriate evidence exist.
-See the [verification record](../verification/refactor-review.md).
+See the [verification status](../verification/README.md).
