@@ -4,7 +4,7 @@ plugins {
     id("io.spring.dependency-management") version "1.1.7"
 }
 group = "dev.sample"
-version = "0.2.2"
+version = "0.3.0"
 java { toolchain { languageVersion.set(JavaLanguageVersion.of(25)) } }
 repositories { mavenCentral() }
 dependencies {
