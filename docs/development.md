@@ -205,8 +205,9 @@ production (artifact promotion), not a separate branch.
 | Same run, after `verify gate` | `ci` / `release images from verified artifacts` | scripts/smoke-release on the downloaded artifacts: package the release images, boot compose.release.yaml, check the SPA, the API proxy and CSRF | Nothing |
 | Tag `v*`, manual | `release` / `verify, package, smoke, publish` | scripts/verify on the tagged tree, scripts/smoke-release on its artifacts, push to GHCR, GitHub Release | `ghcr.io/<owner>/kahoot-backend` and `kahoot-frontend` with the tag and `latest`, artifact `release-jar`, a GitHub Release carrying the jar |
 
-A commit that only rewrites the [verification status](#gate-status)
-after a run carries `[skip ci]` so it does not start another run.
+A commit that only rewrites the [verification status](#gate-status) after a run goes
+through a pull request like any other change and starts a normal `ci` run; the marker
+`[skip ci]` is not used in this repository (see [cutting a release](#cutting-a-release)).
 
 ### Required checks before a merge
 
@@ -245,22 +246,25 @@ titles are the changelog.
    carry the new tag and `latest`, and the GitHub Release exists with
    `quiz-room-vX.Y.Z.jar` attached.
 5. Record the run in the [verification status](#gate-status): result,
-   tag, revision, environment, run URL. That commit carries `[skip ci]`.
+   tag, revision, environment, run URL. That commit goes through a pull request like
+   any other change, because the ruleset requires one; the `ci` run it starts is short
+   and proves nothing new.
 6. Run the browser check before announcing it: `./e2e/run` on the tagged tree, or
    start compose.release.yaml from the pulled images as described in
    [deployment](architecture/README.md#deployment) and run `E2E_BASE_URL=... npm test`
    in `e2e/`. The gate proves the images boot and route; the browser check proves the
-   round a user plays. Record it in the gate status.
+   round a user plays. Record it in the same pull request as step 5.
 
-If the tag push started no `release` run, the tagged commit's message carries
-`[skip ci]`: GitHub applies the marker to the push event of a tag as well, and to
-pull request events, and it matches the marker anywhere in the message, including the
-body. Never write the marker in prose inside a commit message. Either tag a commit
-without the marker or start the workflow on the existing tag by hand; the dispatched
-run still sees a tag ref and publishes the same way:
+`[skip ci]` is not used here: GitHub applies the marker to the push event of a tag as
+well as to pull request events, and matches it anywhere in the message, including the
+body, so a tagged commit carrying it starts no `release` run and a pull request carrying
+it skips its required checks. Never write the marker in a commit message, not even in
+prose (v0.2.0 was dispatched by hand for that reason). If a tag started no run, start
+the workflow on the existing tag by hand; the dispatched run still sees a tag ref and
+publishes the same way:
 
 ```bash
-gh workflow run release.yml --ref v0.2.2
+gh workflow run release.yml --ref v0.3.0
 ```
 
 Rollback is a redeploy of the previous tag: every version stays on GHCR, only
