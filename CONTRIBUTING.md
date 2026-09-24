@@ -67,6 +67,49 @@ Follow the change protocol in AGENTS.md and workflow.md:
 - Never commit `.env`, `.cache/`, build outputs or any credential. Demo values live in
   `.env.example` and the README only.
 
+### Adding a backend module
+
+The rules are in the [backend architecture](docs/architecture/backend.md); these are
+the steps, in one pull request.
+
+1. Confirm it is a bounded context: it owns data nobody else writes. Otherwise add a
+   use case to the module that already owns the data.
+2. Create `dev.sample.quiz.<name>` with `api`, `application`, `domain` and
+   `infrastructure`; copy the shape of `catalog`
+   ([layers](docs/architecture/backend.md#layers-inside-a-module)).
+3. Register the module in the same commit: the Modules table, the dependency matrix
+   and the data ownership table in backend.md, and the `allowed` map in
+   `scripts/check-docs.mjs`. The lint fails on an import outside the matrix.
+4. New tables go in a new Flyway file `V<n>__<name>.sql`; a Redis key family that
+   another module reads is documented in the [Redis room contract](docs/contracts/redis-room.md).
+5. New endpoints go in the [REST contract](docs/contracts/rest-api.md); error codes
+   are contract values thrown as `ApiException`.
+6. User-visible behavior gets a feature document with acceptance IDs.
+7. Tests: `src/test/java/dev/sample/quiz/<name>/` for domain and application,
+   `src/integrationTest` when real services are involved; names carry the IDs and
+   the traceability table gets their rows.
+8. An ADR only when the module adds a store, a matrix edge, a shared table or an
+   external service ([ADR 0009](docs/adr/0009-layered-modules-and-feature-folders.md)).
+9. The commit scope is the module name; add it to the scope list in section 6.
+10. `./scripts/verify`.
+
+### Adding a frontend feature
+
+The rules are in the [frontend architecture](docs/architecture/frontend.md).
+
+1. Create `src/app/features/<name>/` with `<name>.page.ts` and a lazy route in
+   `app.routes.ts`; a host-only route takes the guard from `core`.
+2. State that outlives one render goes in `<name>.store.ts`, provided at the route;
+   state two features need goes to `core`.
+3. Logic that must be tested without a browser is a `.mjs` module with a `.d.mts`
+   declaration next to it; it imports nothing from Angular or the DOM.
+4. Wire types come from `shared/models`, mirrored from the contract; runtime JSON is
+   validated in a policy module before it is applied.
+5. Never import another feature; move what both need to `core` or `shared`.
+6. Tests in `frontend/tests/<name>/`, names carrying the IDs; run `npm test` and
+   `npm run build`.
+7. A feature document with acceptance IDs ([feature index](docs/features/README.md)).
+
 ## 5. Run the gates before you push
 
 ```bash
