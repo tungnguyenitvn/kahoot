@@ -10,6 +10,7 @@
 | [0006](0006-ci-cd-release-images.md) | CI/CD on GitHub Actions with release images | Accepted | 2026-09-23 |
 | [0007](0007-ci-caches-and-verified-artifacts.md) | CI caches and release images from verified artifacts | Accepted | 2026-09-23 |
 | [0008](0008-verification-history-in-git.md) | Verification history lives in git, not in docs | Accepted | 2026-09-24 |
+| [0009](0009-layered-modules-and-feature-folders.md) | Layered backend modules and frontend feature folders | Accepted | 2026-09-24 |
 
 ## Template
 
