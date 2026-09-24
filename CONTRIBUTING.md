@@ -138,11 +138,11 @@ check as if it were the full one.
   for `docs:` the page group (architecture, features, delivery, verification).
 - One coherent change per commit; do not mix a refactor with a behavior change. The
   body says why, and names the acceptance IDs and the evidence when they matter.
-- `[skip ci]` is reserved for a status-only commit pushed to `main` after a release run
-  (see [delivery](docs/development.md#delivery)); never tag such a commit. Inside a pull
-  request a status-only commit carries no marker, because the marker would skip the
-  required checks of the pull request. GitHub matches the marker anywhere in the
-  message, including the body, so do not mention it in prose.
+- `[skip ci]` is not used: GitHub matches the marker anywhere in a commit message,
+  including the body, and applies it to tag pushes and pull request events, so it would
+  skip a release run or a pull request's required checks. A status-only commit (the gate
+  status rows after a run) goes through a pull request like any other change
+  (see [delivery](docs/development.md#cutting-a-release)).
 - Commits written with an AI agent carry a `Co-Authored-By` trailer for the agent.
 
 ## 7. Open the pull request
