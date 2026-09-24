@@ -9,14 +9,17 @@ import org.springframework.http.server.ServletServerHttpRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.socket.WebSocketHandler;
 import org.springframework.web.socket.server.HandshakeInterceptor;
-import dev.sample.quiz.identity.Identity;
+import dev.sample.quiz.identity.application.Identities;
+import dev.sample.quiz.identity.domain.Identity;
 import dev.sample.quiz.shared.ApiException;
 
 public class RoomWebSocketHandshakeInterceptor implements HandshakeInterceptor {
     private final RedisRooms rooms;
+    private final Identities identities;
 
-    public RoomWebSocketHandshakeInterceptor(RedisRooms rooms) {
+    public RoomWebSocketHandshakeInterceptor(RedisRooms rooms, Identities identities) {
         this.rooms = rooms;
+        this.identities = identities;
     }
 
     @Override
@@ -34,7 +37,7 @@ public class RoomWebSocketHandshakeInterceptor implements HandshakeInterceptor {
             return false;
         }
         try {
-            Identity identity = Identity.current(http);
+            Identity identity = identities.current(http);
             var session = http.getSession(false);
             if (session == null) { response.setStatusCode(HttpStatus.UNAUTHORIZED); return false; }
             rooms.command(room.toString(), "snapshot", identity.id(), Map.of());

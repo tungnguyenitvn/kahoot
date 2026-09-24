@@ -1,6 +1,5 @@
-package dev.sample.quiz.identity;
+package dev.sample.quiz.identity.infrastructure;
 import org.springframework.context.annotation.*;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.core.userdetails.*;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -8,12 +7,13 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.csrf.*;
 import jakarta.servlet.http.HttpServletResponse;
+import dev.sample.quiz.identity.application.AccountRepository;
+/** HTTP security: CSRF, form login and logout, filter authorization. Room authorization happens after the filter, in the handlers and the WS handshake. */
 @Configuration
 public class SecurityConfig {
     @Bean PasswordEncoder encoder() { return new BCryptPasswordEncoder(); }
-    @Bean UserDetailsService users(JdbcTemplate jdbc) {
-        return name -> jdbc.query("select * from app_user where username=?",(rs,n)-> new HostPrincipal(rs.getString("id"),rs.getString("username"),rs.getString("display_name"),rs.getString("password_hash")),name)
-            .stream().findFirst().orElseThrow(()->new UsernameNotFoundException("Unknown account"));
+    @Bean UserDetailsService users(AccountRepository accounts) {
+        return name -> accounts.findByUsername(name).map(HostPrincipal::new).orElseThrow(() -> new UsernameNotFoundException("Unknown account"));
     }
     @Bean SecurityFilterChain security(HttpSecurity http) throws Exception {
         var csrf=CookieCsrfTokenRepository.withHttpOnlyFalse();

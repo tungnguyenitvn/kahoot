@@ -13,7 +13,6 @@ import java.util.function.LongSupplier;
 import jakarta.annotation.PreDestroy;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.session.SessionRepository;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
@@ -21,6 +20,7 @@ import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.ConcurrentWebSocketSessionDecorator;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
+import dev.sample.quiz.identity.application.Sessions;
 import dev.sample.quiz.shared.ApiException;
 
 @Component
@@ -29,7 +29,7 @@ public class RoomWebSocketHub {
     private static final int MAX_CLIENTS_PER_ROOM = 150;
     private final RedisRooms rooms;
     private final ObjectMapper json;
-    private final SessionRepository<?> sessions;
+    private final Sessions sessions;
     private final Set<Client> clients = ConcurrentHashMap.newKeySet();
     private final ExecutorService sender = Executors.newVirtualThreadPerTaskExecutor();
     private final Semaphore inFlight = new Semaphore(16);
@@ -37,11 +37,11 @@ public class RoomWebSocketHub {
     private volatile boolean stopped;
 
     @Autowired
-    public RoomWebSocketHub(RedisRooms rooms, ObjectMapper json, SessionRepository<?> sessions) {
+    public RoomWebSocketHub(RedisRooms rooms, ObjectMapper json, Sessions sessions) {
         this(rooms,json,sessions,()->System.nanoTime()/1_000_000);
     }
 
-    RoomWebSocketHub(RedisRooms rooms, ObjectMapper json, SessionRepository<?> sessions, LongSupplier nowMillis) {
+    RoomWebSocketHub(RedisRooms rooms, ObjectMapper json, Sessions sessions, LongSupplier nowMillis) {
         this.rooms = rooms;
         this.json = json;
         this.sessions = sessions;
@@ -126,7 +126,7 @@ public class RoomWebSocketHub {
                 remove(client.session);
                 return;
             }
-            if (sessions.findById(client.httpSessionId) == null) {
+            if (!sessions.live(client.httpSessionId)) {
                 revoke(client, "SESSION_EXPIRED");
                 return;
             }
