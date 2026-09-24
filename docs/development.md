@@ -123,8 +123,8 @@ COMMAND_LIMIT capacity) map to the [acceptance scenarios](architecture/README.md
 | JOIN-03 | GameIntegrationTest#realCookiesCsrfAuthorizationReconnectAndArchiveReplay (snapshot after answer returns the session's receipt) | scripts/test |
 | JOIN-04 | GameIntegrationTest#realCookiesCsrfAuthorizationReconnectAndArchiveReplay (guest start returns 403); scripts/test-room.lua HOST_REQUIRED check | scripts/test, Lua smoke |
 | STUDIO-01 | NOT COVERED: route guard needs browser E2E; the API-level 401 for guests is covered under LOGIN-03 | none |
-| STUDIO-02 | NOT COVERED: server validation annotations exist but have no test | none |
-| STUDIO-03 | NOT COVERED: cross-owner publish untested | none |
+| STUDIO-02 | DraftTest#rejectsMissingTitleQuestionsOrOptions and #keepsValidContent (domain invariants; the HTTP 400 mapping of the same bounds has no separate test) | scripts/test |
+| STUDIO-03 | QuizCatalogTest#publishIsScopedToTheOwner (application facade over an in-memory repository; the SQL owner clause has no separate test) | scripts/test |
 | STUDIO-04 | NOT COVERED: no edit API exists yet, so nothing exercises a later catalog change | none |
 | STUDIO-05 | GameIntegrationTest#realCookiesCsrfAuthorizationReconnectAndArchiveReplay (same commandId returns the same room); RoomServiceTest#sqlFailureAfterInitMustNotRemoveLiveRegistrationAndRetryRepairsIt; GameIntegrationTest#activeRegistrationRepairsLiveStateButNeverResurrectsFinishedRoom | scripts/test |
 | ROOM-03 | GameIntegrationTest#receiptSurvivesRoundTransitionAndConflictingAnswerIsRejected; scripts/test-room.lua "retry of previous round cannot score or advance the new round" | scripts/test, Lua smoke |
