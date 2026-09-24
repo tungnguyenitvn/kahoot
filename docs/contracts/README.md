@@ -14,7 +14,7 @@ canonical in the [limits table](../architecture/quality-and-risks.md#limits-and-
 contracts keep only wire-visible validation bounds.
 
 Domain truth: [game rules](../domain/game.md). Runtime implementation:
-[module designs](../modules/README.md). Evidence: [verification](../verification/refactor-review.md).
+[module designs](../modules/README.md). Evidence: [verification status](../verification/README.md).
 
 ## Known deviations
 
@@ -25,7 +25,3 @@ code change and a contract update in the same task.
 | Deviation | Current behavior | Decision |
 |---|---|---|
 | Creation responds 200, not 201 | POST /quizzes and POST /rooms return 200 with the created resource; RFC 9110 recommends 201 for a created resource | Accepted convention: every successful JSON response is 200, and clients must not depend on 201 |
-
-The two former deviations (HTTP 429 for COMMAND_LIMIT, SQL column names in the history
-list) were fixed in code on 2026-09-23; see the
-[historical record](../verification/refactor-review.md).

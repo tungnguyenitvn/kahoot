@@ -1,6 +1,6 @@
 # ADR 0005: evidence location and verification status
 
-Status: Accepted.
+Status: Superseded by [ADR 0008](0008-verification-history-in-git.md).
 Date: 2026-09-23.
 
 ## Context

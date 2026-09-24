@@ -40,4 +40,4 @@ settings, not latency benchmarks; their values are canonical in the
 ## Verification
 
 Regression tests for burst coalescing, expired sessions, provisioning retry and
-browser initial-failure/reconnect/disposal. See [evidence](../verification/refactor-review.md).
+browser initial-failure/reconnect/disposal. See [evidence at revision 91658f5](https://github.com/tungnguyenitvn/kahoot/blob/91658f5733c2bd611ca52d452fa6e94675f180a3/docs/verification/refactor-review.md).
