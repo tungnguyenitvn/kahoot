@@ -19,7 +19,7 @@ Let prefix be game:{<room UUID>}: (literal braces form the room hash tag).
 | events | stream | event field containing JSON event envelope |
 
 Global quiz:active-rooms is a set; quiz:pin:<six digits> maps PIN to room (TTL in the
-[limits table](../architecture/quality-and-risks.md#limits-and-timings), no literal braces
+[limits table](../architecture/README.md#limits-and-timings), no literal braces
 around the PIN). HTTP sessions use quiz:http-session namespace.
 Registration/terminal cleanup combine room keys and the global active key; unlike
 room.lua, those operations are NOT cluster-slot compatible.

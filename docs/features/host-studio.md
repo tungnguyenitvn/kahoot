@@ -23,7 +23,7 @@ hành duy nhất.
 
 - Host nhập title và xây dựng danh sách câu hỏi tạm thời.
 - Mỗi câu có các option A–D với một đáp án đúng và thời gian giới hạn; số câu tối đa,
-  số option và khoảng thời gian theo [domain rules](../domain/game.md), bound validate
+  số option và khoảng thời gian theo [domain rules](../domain.md), bound validate
   theo [REST contract](../contracts/rest-api.md#catalog-host).
 - Có thể xóa câu trước khi lưu.
 - **Lưu bản nháp** gọi `POST /api/quizzes` và xóa danh sách câu đã lưu sau success; các field editor còn lại giữ nguyên.

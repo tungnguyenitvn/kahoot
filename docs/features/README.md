@@ -13,7 +13,7 @@ acceptance criteria riêng.
 | [Room history](room-history.md) | `/host` (panel) | Danh sách phòng và kết quả archive |
 
 Các invariant xuyên feature (scoring, concurrency, privacy, archive, fail-closed) có ID
-`LIVE-xx` và nằm trong [domain rules](../domain/game.md#acceptance-invariants); feature
+`LIVE-xx` và nằm trong [domain rules](../domain.md#acceptance-invariants); feature
 docs chỉ tham chiếu, không phát biểu lại.
 
 Feature docs trả lời “người dùng đang cố đạt mục tiêu gì và hệ thống phải phản hồi
@@ -23,7 +23,7 @@ nào”. Hai lớp tài liệu phải được cập nhật cùng nhau khi thêm
 Mỗi acceptance criterion có ID ổn định theo prefix của feature (LOGIN, JOIN, STUDIO,
 ROOM, ANSWER, HIST) hoặc LIVE cho invariant domain. Một hành vi chỉ có một ID; ID không
 được đánh số lại. Test, issue và PR tham chiếu ID thay vì diễn giải lại; ma trận
-ID → test nằm trong [testing](../development/testing.md). Feature docs viết bằng tiếng
+ID → test nằm trong [testing](../development.md#testing-and-evidence). Feature docs viết bằng tiếng
 Việt theo [chính sách ngôn ngữ](../README.md#language-policy); tên UI, mã lỗi và
 identifier giữ nguyên, số liệu chỉ link tới tài liệu sở hữu.
 

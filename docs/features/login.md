@@ -51,4 +51,4 @@ không cần login để tham gia game.
 ## Contracts
 
 Xem [REST API identity contract](../contracts/rest-api.md#identity-and-security) và
-[engineering conventions](../development/conventions.md).
+[engineering conventions](../development.md#conventions).

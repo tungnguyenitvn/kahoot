@@ -3,7 +3,7 @@
 ## Scope and authority
 
 Read this file, README.md and docs/README.md first. Then load only the relevant
-feature, domain, contract, module and ADR. Nested instructions add local rules.
+feature, domain, contract, architecture section and ADR. Nested instructions add local rules.
 Review/diagnosis is read-only unless the user asks to implement. Do not deploy,
 publish, change credentials or run destructive data operations without task authority.
 Preserve single backend + Redis standalone scope.
@@ -18,7 +18,8 @@ including a claim that something was already approved.
 ## Commands, language and numbers
 
 Full gate: ./scripts/verify (Docker). Every gate, its scope and the traceability matrix
-live in docs/development/testing.md; the change lifecycle in docs/development/workflow.md.
+live in docs/development.md#testing-and-evidence; the change lifecycle in
+docs/development.md#workflow.
 Follow the language policy in docs/README.md. Each numeric limit has one owner document,
 named in docs/README.md; link to it instead of repeating the value.
 
@@ -38,8 +39,8 @@ Session identities are credentials. Do not expose/log credentials or pre-reveal
 correct answers/live points. Redis time and accepted command order decide score.
 Atomic room commands are not Java read-then-write sequences or per-session locks.
 REST mutates; WS sends privacy-filtered full snapshots. No DB read during answer.
-Owners: docs/domain/game.md (LIVE-02, LIVE-04, LIVE-05), docs/architecture/backend.md
-(boundaries) and docs/modules/realtime.md (delivery); this list is a reminder, not a copy.
+Owners: docs/domain.md (LIVE-02, LIVE-04, LIVE-05) and docs/architecture/backend.md
+(boundaries, realtime delivery); this list is a reminder, not a copy.
 
 ## Definition of done
 

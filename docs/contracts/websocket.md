@@ -57,7 +57,7 @@ version guard in [room-state](room-state.md#merge-and-privacy). REVOKED, or a
 terminal REST 401/403/404, ends the connection until a new route/session flow.
 
 Reconnect timing, periodic REST reconciliation, server limits, session rechecks and
-slow-consumer behavior belong to the [realtime module design](../modules/realtime.md)
-and the [limits table](../architecture/quality-and-risks.md#limits-and-timings), not
+slow-consumer behavior belong to the [realtime module design](../architecture/backend.md#realtime-delivery)
+and the [limits table](../architecture/README.md#limits-and-timings), not
 a duplicate wire spec. Origin/identity rejection occurs before upgrade; do not expect
 a WS JSON error then.

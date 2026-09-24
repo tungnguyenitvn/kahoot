@@ -20,7 +20,7 @@ the tagged tree, builds and smokes the same images, pushes them to GHCR with the
 and `latest`, and creates a GitHub Release with the boot jar. Only GITHUB_TOKEN is
 used. The release stack has no TLS and keeps the demo seed as the only account
 provisioning; both are documented as operator responsibilities in
-[deployment](../architecture/deployment.md).
+[deployment](../architecture/README.md#deployment).
 
 ## Alternatives
 

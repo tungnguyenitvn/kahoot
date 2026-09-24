@@ -28,7 +28,7 @@ node --test frontend/tests/*.test.mjs
 texlua scripts/test-room.lua . # smoke test Lua với Redis double; texlua hoặc Lua 5.3/5.4 bất kỳ
 ```
 
-Các lệnh offline không kiểm tra Spring, Redis, PostgreSQL, browser hay WebSocket thật. `./scripts/verify` dùng compose cô lập, không đụng volume dev; Gradle distribution, dependency Maven và cache npm nằm trong `.cache/` (đã gitignore) để lần chạy sau và CI không tải lại. Phạm vi từng gate và ma trận acceptance ID → test: [testing](docs/development/testing.md).
+Các lệnh offline không kiểm tra Spring, Redis, PostgreSQL, browser hay WebSocket thật. `./scripts/verify` dùng compose cô lập, không đụng volume dev; Gradle distribution, dependency Maven và cache npm nằm trong `.cache/` (đã gitignore) để lần chạy sau và CI không tải lại. Phạm vi từng gate và ma trận acceptance ID → test: [testing](docs/development.md#testing-and-evidence).
 
 ## Release
 
@@ -45,8 +45,8 @@ DB_PASSWORD=... DEMO_PASSWORD=... PUBLIC_ORIGIN=http://localhost:8081 docker com
 ```
 
 Stack release chưa có TLS; đặt TLS terminator phía trước và chỉnh `PUBLIC_ORIGIN`,
-`COOKIE_SECURE` theo [deployment](docs/architecture/deployment.md). Quy trình cắt
-release, hotfix và required checks: [delivery](docs/development/delivery.md).
+`COOKIE_SECURE` theo [deployment](docs/architecture/README.md#deployment). Quy trình cắt
+release, hotfix và required checks: [delivery](docs/development.md#delivery).
 
 ## Đóng góp
 
@@ -55,17 +55,17 @@ mở PR đúng template và review: [CONTRIBUTING](CONTRIBUTING.md).
 
 ## Tài liệu và workflow AI
 
-Bắt đầu tại [bản đồ tài liệu](docs/README.md). Architecture chỉ giữ cấu trúc chung;
-module design chứa runtime/failure paths; feature và contracts có trách nhiệm riêng.
-[Workflow](docs/development/workflow.md) và AGENTS.md quy định context, scope và
-Definition of Done cho người và AI. [Verification status](docs/verification/README.md)
+Bắt đầu tại [bản đồ tài liệu](docs/README.md): mỗi câu hỏi có đúng một tài liệu sở hữu
+và một bài kiểm tra đặt nội dung để biết câu nào thuộc domain, feature, architecture hay contract.
+[Workflow](docs/development.md#workflow) và AGENTS.md quy định context, scope và
+Definition of Done cho người và AI. [Verification status](docs/development.md#gate-status)
 ghi kết quả mới nhất của từng gate kèm revision và môi trường.
 
 ## Thiết kế
 
-- [Feature index](docs/features/README.md) · [invariant live quiz](docs/domain/game.md#acceptance-invariants) · [quy tắc game](docs/domain/game.md)
-- [Tổng quan kiến trúc](docs/architecture/overview.md) · [Backend architecture](docs/architecture/backend.md) · [Frontend architecture](docs/architecture/frontend.md) · [Redis live state](docs/adr/0002-redis-game-state.md)
-- [Contracts index](docs/contracts/README.md) · [REST API](docs/contracts/rest-api.md) · [Redis room](docs/contracts/redis-room.md) · [WebSocket](docs/contracts/websocket.md) · [Realtime delivery](docs/modules/realtime.md)
-- [Kiểm thử và traceability](docs/development/testing.md) · [vận hành](docs/operations/runbook.md)
+- [Feature index](docs/features/README.md) · [invariant live quiz](docs/domain.md#acceptance-invariants) · [quy tắc game](docs/domain.md)
+- [Tổng quan kiến trúc](docs/architecture/README.md) · [Backend architecture](docs/architecture/backend.md) · [Frontend architecture](docs/architecture/frontend.md) · [Redis live state](docs/adr/0002-redis-game-state.md)
+- [Contracts index](docs/README.md#contracts) · [REST API](docs/contracts/rest-api.md) · [Redis room](docs/contracts/redis-room.md) · [WebSocket](docs/contracts/websocket.md) · [Realtime delivery](docs/architecture/backend.md#realtime-delivery)
+- [Kiểm thử và traceability](docs/development.md#testing-and-evidence) · [vận hành](docs/operations.md)
 
-Đây là sample một backend instance: các invariant về nguyên tử, thứ tự và privacy nằm trong [domain rules](docs/domain/game.md#acceptance-invariants), phạm vi và non-goal trong [product scope](docs/product/scope.md).
+Đây là sample một backend instance: các invariant về nguyên tử, thứ tự và privacy nằm trong [domain rules](docs/domain.md#acceptance-invariants), phạm vi và non-goal trong [product scope](docs/architecture/README.md#scope-and-non-goals).

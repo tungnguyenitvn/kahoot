@@ -4,10 +4,10 @@ Target design for the Angular SPA: standalone components, lazy routes, OnPush,
 signals for owned state. This page describes the intended checked-in design; where
 the current tree differs, [Known gaps](#known-gaps) says so. Screen behavior belongs
 to [features](../features/README.md), messages and privacy to
-[contracts](../contracts/README.md), the connection lifecycle to
-[realtime design](../modules/realtime.md), coding style to
-[conventions](../development/conventions.md) and every numeric value to the
-[limits table](quality-and-risks.md#limits-and-timings).
+[contracts](../README.md#contracts), the connection lifecycle to the
+[room connection lifecycle](#room-connection-lifecycle) below, coding style to
+[conventions](../development.md#conventions) and every numeric value to the
+[limits table](README.md#limits-and-timings).
 
 ## Folders
 
@@ -71,8 +71,28 @@ same-room/version guard. Answer POST returns a receipt, then the store refreshes
 Version gaps are valid for full snapshots; no event replay exists.
 
 Initial transient failure keeps reconciliation active. Access failure is terminal.
-[Realtime design](../modules/realtime.md) owns the exact lifecycle and error
-behavior; [contracts](../contracts/websocket.md) own messages and privacy.
+The [room connection lifecycle](#room-connection-lifecycle) below owns the exact
+lifecycle and error behavior; [contracts](../contracts/websocket.md) own messages and privacy.
+
+## Room connection lifecycle
+
+RoomConnection owns timers/socket, with injected callbacks and no Angular dependency.
+RoomStore owns signals and commands.
+
+- Start: begin REST reconciliation even if the first request fails transiently.
+- First valid snapshot: open socket. WS open sends SYNC.
+- Close: reconnect with bounded exponential delay and jitter.
+- Close with code 1012 (registration refused for capacity): no retry timer; the next
+  REST reconciliation reopens the socket (ROOM-07). Close codes are listed in the
+  [WebSocket contract](../contracts/websocket.md#close-codes).
+- Poll: full REST snapshot on a fixed interval even when WS is healthy.
+- 401/403/404 or REVOKED: stop socket/retry/poll; ignore late completions.
+- Dispose/route change: detach handlers, cancel timers, reject old-room updates.
+- Malformed frame: report protocol error and request REST reconciliation.
+- Full snapshots may skip versions; only older/sibling-room snapshots are rejected.
+
+Connection retries never submit answer/control. Pending mutation IDs belong to
+RoomStore memory only; accepted receipts can be recovered from Redis after reload.
 
 ## Trust boundary
 
@@ -89,10 +109,10 @@ nothing credential-like goes to localStorage.
 | Policy modules | `node --test`, deterministic through injected callbacks and fake timers | npm test |
 | Templates and stores | Compile only, `ng build`; no browser test | npm run build |
 | Static invariants | File-content tests: base href, no embedded credentials | npm test |
-| Browser flows | Not covered; label it rather than claim it | none, see [quality risks](quality-and-risks.md) |
+| Browser flows | Not covered; label it rather than claim it | none, see [quality risks](README.md#limits-and-timings) |
 
 Tests live under `frontend/tests/` mirroring `features/`; a test name carries the
-acceptance ID it covers ([testing](../development/testing.md)). Signals usage is an
+acceptance ID it covers ([testing](../development.md#testing-and-evidence)). Signals usage is an
 implementation choice, not evidence of correctness.
 
 ## Known gaps
