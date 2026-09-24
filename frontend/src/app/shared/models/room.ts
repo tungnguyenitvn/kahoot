@@ -1,6 +1,5 @@
-export interface Identity { id: string; name: string; host: boolean }
-export interface Question { text: string; options: string[]; correctOption: number; seconds: number }
-export interface Quiz { id: string; title: string; status: 'DRAFT' | 'PUBLISHED'; questions: Question[] }
+/** Wire shapes of the room snapshot and receipt (docs/contracts/room-state.md); runtime JSON is validated by the room policy module before use. */
+import { Question } from './catalog';
 export interface Player { id: string; name: string; active: boolean; answered: boolean; score: number }
 export interface Room {
   id: string; pin: string; title: string; phase: 'LOBBY' | 'QUESTION' | 'REVEAL' | 'FINISHED';
@@ -10,4 +9,3 @@ export interface Room {
   me: { role: 'HOST' | 'PLAYER'; participantId: string | null; answer: Receipt | null };
 }
 export interface Receipt { answerId: string; roundId?: string; acceptedAt: number; option: number }
-export interface HistoryRoom { id: string; title: string; phase: string; archivedVersion: number; createdAt: string; finishedAt: string | null }

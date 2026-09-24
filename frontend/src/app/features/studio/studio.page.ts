@@ -2,8 +2,11 @@ import { Component, inject, signal, ChangeDetectionStrategy } from '@angular/cor
 import { httpResource } from '@angular/common/http';
 import { form, FormField, required, min, max } from '@angular/forms/signals';
 import { Router, RouterLink } from '@angular/router';
-import { Api, errorMessage } from './api';
-import { Quiz, Question, Room, HistoryRoom } from './models';
+import { Api } from '../../core/http';
+import { errorMessage } from '../../core/errors';
+import { Quiz, Question } from '../../shared/models/catalog';
+import { Room } from '../../shared/models/room';
+import { HistoryRoom } from '../../shared/models/history';
 @Component({ imports: [FormField, RouterLink], changeDetection: ChangeDetectionStrategy.OnPush, template: `
   <div class="heading"><div><p class="eyebrow">HOST STUDIO</p><h1>Sẵn sàng lên sóng?</h1></div><button class="ghost" (click)="quizzes.reload(); history.reload()">Làm mới</button></div>
   @if(error()) { <p class="alert" role="alert">{{error()}}</p> }

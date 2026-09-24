@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { leaderboard, shouldApply, isRoomSnapshot } from '../src/app/room-state.mjs';
+import { leaderboard, shouldApply, isRoomSnapshot } from '../../src/app/features/room/room-state.mjs';
 test('late HTTP response cannot roll back a WebSocket snapshot',()=>{
  assert.equal(shouldApply({id:'r',version:8},{id:'r',version:7}),false);
  assert.equal(shouldApply({id:'r',version:8},{id:'r',version:8}),true);

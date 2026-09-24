@@ -25,13 +25,14 @@ src/app
 
 Dependency direction: features → core and shared; core → shared; shared → nothing
 in the application. Features never import each other; what two features need moves
-to core or shared. Routes are the only composition point between features
+to core or shared. `scripts/check-docs.mjs` enforces these directions on relative
+imports (rule `frontend`). Routes are the only composition point between features
 ([ADR 0009](../adr/0009-layered-modules-and-feature-folders.md); steps for a new
 feature in [CONTRIBUTING](../../CONTRIBUTING.md#adding-a-frontend-feature)).
 
 Policy that must be testable without a browser is a plain ES module (`*.mjs` with a
 `.d.mts` declaration) inside the feature that owns it: it imports nothing from
-Angular or the DOM, receives I/O as injected callbacks and is tested by `node --test`.
+Angular or the DOM (the same rule checks that it imports only other `.mjs` modules), receives I/O as injected callbacks and is tested by `node --test`.
 Angular files hold rendering and wiring only.
 
 ## Layers
@@ -117,13 +118,6 @@ implementation choice, not evidence of correctness.
 
 ## Known gaps
 
-The current tree predates this design. A change that closes an item also removes
-it from this table.
-
-| Gap | Current state | Target |
-|---|---|---|
-| Folders | Everything flat in `src/app` | core / shared / features |
-| core split | `api.ts` holds the HttpClient wrapper, `Auth` and message mapping | core/http, core/auth, core/errors |
-| Models | One `models.ts` for every feature | shared/models, one file per contract |
-| Tests | Flat `tests/*.test.mjs` and a flat gate glob | `tests/<feature>/` and a recursive glob |
-| Boundary enforcement | No check for feature-to-feature imports | A lint rule or a check in `scripts/check-docs.mjs` |
+None open: the tree has the folders above, the tests mirror `features/`, and
+`scripts/check-docs.mjs` enforces the folder boundaries (rule `frontend`). A change that
+reopens a gap adds a row here with the current state and the target.

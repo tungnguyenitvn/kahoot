@@ -1,7 +1,7 @@
 import { Component, inject, ChangeDetectionStrategy } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { RoomStore } from './room-store';
+import { RoomStore } from './room.store';
 @Component({ imports:[RouterLink], providers:[RoomStore], changeDetection:ChangeDetectionStrategy.OnPush, template:`
   @if(s.error()){<p class="alert" role="alert">{{s.error()}} <button class="ghost" (click)="s.refresh()">Đồng bộ lại</button></p>}
   @if(s.room(); as room){

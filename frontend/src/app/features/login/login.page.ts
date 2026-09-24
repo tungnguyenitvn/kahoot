@@ -1,7 +1,8 @@
 import { Component, inject, signal, ChangeDetectionStrategy } from '@angular/core';
 import { form, FormField, required } from '@angular/forms/signals';
 import { Router } from '@angular/router';
-import { Auth, errorMessage } from './api';
+import { Auth } from '../../core/auth';
+import { errorMessage } from '../../core/errors';
 @Component({ imports: [FormField], changeDetection: ChangeDetectionStrategy.OnPush, template: `
   <form class="card narrow" (submit)="login($event)"><p class="eyebrow">DÀNH CHO NGƯỜI DẪN</p><h1>Host studio</h1>
     <label>Email<input [formField]="fields.username" type="email" autocomplete="username"></label>

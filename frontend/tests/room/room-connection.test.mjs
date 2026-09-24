@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { RoomConnection } from '../src/app/room-connection.mjs';
+import { RoomConnection } from '../../src/app/features/room/room-connection.mjs';
 
 const state = (version = 1) => ({id:'room-a',pin:'123456',title:'Quiz',phase:'LOBBY',version,
   serverTime:1000,deadline:0,questionNumber:0,questionCount:1,question:null,players:{},

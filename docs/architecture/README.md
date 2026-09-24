@@ -143,10 +143,10 @@ repeated elsewhere. Change a value here and in its source in the same change.
 | WebSocket send guard | 10 s send time, 256 KB buffer per session | RoomWebSocketHub |
 | WebSocket inbound text | wire bound owned by the [WebSocket contract](../contracts/websocket.md) | RoomWebSocketHub |
 | PIN reservation attempts | 100 random PINs per room creation, then PIN_UNAVAILABLE | RedisRoomRegistry.reservePin |
-| Client REST reconciliation | every 5 s while the room route is open | room-connection.mjs |
-| Client reconnect backoff | 500 ms doubling to a 10 s cap, jitter factor 0.8–1.2 | room-connection.mjs |
-| Client clock refresh | every 100 ms | room-store.ts |
-| Leaderboard rows shown | top 10 visible scores | room.ts |
+| Client REST reconciliation | every 5 s while the room route is open | features/room/room-connection.mjs |
+| Client reconnect backoff | 500 ms doubling to a 10 s cap, jitter factor 0.8–1.2 | features/room/room-connection.mjs |
+| Client clock refresh | every 100 ms | features/room/room.store.ts |
+| Leaderboard rows shown | top 10 visible scores | features/room/room.page.ts |
 | Scheduler pool | 3 platform threads shared by timer, archive and flush | SchedulingConfig |
 
 ## Acceptance scenarios

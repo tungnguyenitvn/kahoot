@@ -1,6 +1,7 @@
 import { Component, inject, signal, ChangeDetectionStrategy } from '@angular/core';
 import { Router, RouterLink, RouterOutlet } from '@angular/router';
-import { Auth, errorMessage } from './api';
+import { Auth } from './core/auth';
+import { errorMessage } from './core/errors';
 @Component({ selector: 'app-root', imports: [RouterOutlet, RouterLink], changeDetection: ChangeDetectionStrategy.OnPush,
   template: `<header class="nav"><a routerLink="/" class="brand">QUIZ<span>ROOM</span><small>LIVE PLAY / v0.2</small></a>
     <nav><a routerLink="/">Tham gia</a><a routerLink="/host">Host studio</a>

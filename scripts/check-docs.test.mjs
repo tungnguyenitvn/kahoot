@@ -80,3 +80,39 @@ test('layers: a layered module with the documented directions passes', () => {
   }));
   assert.equal(status, 0, out);
 });
+
+const appRoot = 'frontend/src/app';
+const ts = (imports) => imports.map(i => `import { x } from '${i}';`).join('\n') + '\nexport const y = 1;\n';
+
+test('frontend: a feature never imports another feature or the app root', () => {
+  const { status, out } = lint(fixture({ [`${appRoot}/features/room/room.page.ts`]: ts(['../studio/studio.page', '../../app']) }));
+  assert.equal(status, 1, out);
+  assert.match(out, /\[frontend\] .*features\/room.* imports features\/studio/);
+  assert.match(out, /\[frontend\] .*features\/room.* imports app\.ts/);
+});
+
+test('frontend: core and shared never import a feature; shared never imports core', () => {
+  const { status, out } = lint(fixture({ [`${appRoot}/core/auth.ts`]: ts(['../features/login/login.page']), [`${appRoot}/shared/models/room.ts`]: ts(['../../core/http']) }));
+  assert.equal(status, 1, out);
+  assert.match(out, /\[frontend\] .*core\/auth\.ts.* imports features\/login/);
+  assert.match(out, /\[frontend\] .*shared\/models\/room\.ts.* imports core/);
+});
+
+test('frontend: a policy module imports nothing from Angular and no TypeScript file', () => {
+  const { status, out } = lint(fixture({ [`${appRoot}/features/room/room-state.mjs`]: "import { signal } from '@angular/core';\nimport { Api } from '../../core/http';\nimport { helper } from './room-connection.mjs';\nexport const y = 1;\n" }));
+  assert.equal(status, 1, out);
+  assert.match(out, /\[frontend\] .*room-state\.mjs.* imports @angular\/core/);
+  assert.match(out, /\[frontend\] .*room-state\.mjs.* imports \.\.\/\.\.\/core\/http/);
+  assert.doesNotMatch(out, /room-connection\.mjs/);
+});
+
+test('frontend: the documented layout passes', () => {
+  const { status, out } = lint(fixture({
+    [`${appRoot}/app.routes.ts`]: ts(['./core/host.guard', './features/room/room.page']),
+    [`${appRoot}/core/auth.ts`]: ts(['./http', '../shared/models/identity']),
+    [`${appRoot}/shared/models/room.ts`]: ts(['./catalog']),
+    [`${appRoot}/features/room/room.store.ts`]: ts(['../../core/http', '../../shared/models/room', './room-state.mjs']),
+    [`${appRoot}/features/room/room-connection.mjs`]: "import { x } from './room-state.mjs';\nexport const y = 1;\n",
+  }));
+  assert.equal(status, 0, out);
+});
