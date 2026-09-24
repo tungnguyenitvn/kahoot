@@ -1,4 +1,4 @@
-package dev.sample.quiz.gameplay;
+package dev.sample.quiz.gameplay.infrastructure;
 
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.CloseStatus;

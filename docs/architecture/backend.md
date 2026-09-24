@@ -171,12 +171,9 @@ covers; the matrix is in [testing](../development.md#testing-and-evidence).
 
 ## Known gaps
 
-The current tree predates this design. A change that closes an item also removes
-it from this table.
-
-| Gap | Current state | Target |
-|---|---|---|
-| Layers | catalog, identity, archive and the command side of gameplay have the four layers; gameplay's WebSocket hub, handler, handshake, config and timer are still flat | api / application / domain / infrastructure per module |
+None open on the backend: every module has the four layers and the lint enforces the
+directions. A change that reopens a gap adds a row here with the current state and the
+target; the frontend page keeps its own table.
 
 ## Module designs
 
@@ -366,7 +363,9 @@ REST mutates; WS delivers full privacy-filtered snapshots. The
 
 #### Server dispatch
 
-Commands mark matching connections dirty instead of allocating a task per event.
+`infrastructure.RoomWebSocketHub` implements the `Notifier` port and reads snapshots
+through `RoomCommands`; the handler, handshake interceptor, config and `RoomTimers` sit
+beside it. Commands mark matching connections dirty instead of allocating a task per event.
 A scheduler dispatches dirty/periodic checks with:
 - one in-flight snapshot per connection;
 - a global cap on in-flight snapshot tasks;
