@@ -6,13 +6,14 @@ import { fileURLToPath } from 'node:url';
 // Flip a rule to 'fail' only when the tree is clean for it; docs/development.md lists the rules.
 const MODE = { links: 'fail', wire: 'fail', imports: 'fail', L1: 'fail', L2: 'fail', L3: 'fail', L4: 'fail', L5: 'fail' };
 
-const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+// CHECK_DOCS_ROOT points the lint at another tree; scripts/check-docs.test.mjs uses it for fixture trees.
+const root = process.env.CHECK_DOCS_ROOT ? path.resolve(process.env.CHECK_DOCS_ROOT) : path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const docsRoot = path.join(root, 'docs');
 const failures = [], warnings = [];
 const report = (rule, message) => { if (MODE[rule] === 'off') return; (MODE[rule] === 'fail' ? failures : warnings).push(`[${rule}] ${message}`); };
 const rel = file => path.relative(root, file);
 const read = file => fs.readFileSync(file, 'utf8');
-const walk = (dir, keep = f => f.endsWith('.md')) => fs.readdirSync(dir, { withFileTypes: true })
+const walk = (dir, keep = f => f.endsWith('.md')) => !fs.existsSync(dir) ? [] : fs.readdirSync(dir, { withFileTypes: true })
   .flatMap(e => { const p = path.join(dir, e.name); return e.isDirectory() ? walk(p, keep) : keep(p) ? [p] : []; });
 const stripCode = text => text.replace(/(^```[\s\S]*?^```|^~~~[\s\S]*?^~~~)/gm, '');
 const stripLinks = text => text.replace(/\[[^\]\n]+\]\([^)\s]+\)/g, '');
@@ -139,15 +140,20 @@ for (const file of walk(adrDir)) {
   else if (statusKey(cells[2]) !== fileStatus) report('L5', `${rel(file)}: Status "${fileStatus}" differs from index "${cells[2]}"`);
 }
 
-// Documented package directions. This checks imports, not reflection or SQL ownership.
+// Documented package directions. This checks imports, not reflection or SQL ownership. A package that is not in the
+// map fails, so a new module registers in docs/architecture/backend.md and here before it enters the gate; the root
+// package holds the composition root and is not a module.
 const allowed = { bootstrap: ['identity', 'catalog', 'shared'], identity: ['shared'], catalog: ['identity', 'shared'], gameplay: ['identity', 'catalog', 'shared'], archive: ['identity', 'gameplay', 'shared'], shared: [] };
 const source = path.join(root, 'backend/src/main/java/dev/sample/quiz');
+const unknown = new Set();
 for (const file of walk(source, f => f.endsWith('.java'))) {
-  const own = path.relative(source, file).split(path.sep)[0]; if (!allowed[own]) continue;
+  const parts = path.relative(source, file).split(path.sep); if (parts.length === 1) continue;
+  const own = parts[0]; if (!allowed[own]) { unknown.add(own); continue; }
   for (const match of read(file).matchAll(/import\s+dev\.sample\.quiz\.(\w+)\./g)) {
     if (match[1] !== own && !allowed[own].includes(match[1])) report('imports', `${rel(file)}: forbidden module dependency ${match[1]}`);
   }
 }
+for (const own of unknown) report('imports', `${rel(path.join(source, own))}: package ${own} is not in the module matrix; register it in docs/architecture/backend.md and in the allowed map`);
 
 for (const warning of warnings) console.warn('WARN ' + warning);
 if (failures.length) { console.error(failures.join('\n')); process.exitCode = 1; }

@@ -79,7 +79,8 @@ the steps, in one pull request.
    ([layers](docs/architecture/backend.md#layers-inside-a-module)).
 3. Register the module in the same commit: the Modules table, the dependency matrix
    and the data ownership table in backend.md, and the `allowed` map in
-   `scripts/check-docs.mjs`. The lint fails on an import outside the matrix.
+   `scripts/check-docs.mjs`. The lint fails on an import outside the matrix and on a
+   package that is not in the map.
 4. New tables go in a new Flyway file `V<n>__<name>.sql`; a Redis key family that
    another module reads is documented in the [Redis room contract](docs/contracts/redis-room.md).
 5. New endpoints go in the [REST contract](docs/contracts/rest-api.md); error codes
@@ -114,6 +115,7 @@ The rules are in the [frontend architecture](docs/architecture/frontend.md).
 
 ```bash
 node scripts/check-docs.mjs
+node --test scripts/check-docs.test.mjs
 node --test frontend/tests/*.test.mjs
 ./scripts/verify
 ```

@@ -51,7 +51,9 @@ the single writer for a room ([ADR 0002](../adr/0002-redis-game-state.md)).
 ## Dependency matrix
 
 Directions between modules. The `allowed` map in `scripts/check-docs.mjs` enforces
-this table on Java imports; the two change together.
+this table on Java imports; the two change together. A package that is not in the map
+fails the lint, so a new module cannot skip registration; the root package holds the
+composition root and is not a module.
 
 | Module | May import | Must not import |
 |---|---|---|

@@ -24,6 +24,7 @@ Gradle wrapper (`backend/gradlew`, `backend/gradle/wrapper`) và `frontend/packa
 ./scripts/test                 # Redis/PostgreSQL tạm thời + backend unit/integration
 ./scripts/verify               # cổng đầy đủ: compose config, Lua smoke, backend, check-docs, Angular test/build
 node scripts/check-docs.mjs    # lint tài liệu, chạy được không cần Docker
+node --test scripts/check-docs.test.mjs   # self-test của lint trên cây fixture
 node --test frontend/tests/*.test.mjs
 texlua scripts/test-room.lua . # smoke test Lua với Redis double; texlua hoặc Lua 5.3/5.4 bất kỳ
 ```
