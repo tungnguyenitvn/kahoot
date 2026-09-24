@@ -1,7 +1,7 @@
 # Redis room and event contract
 
-Private protocol between RedisRooms, room.lua and ArchiveWorker. Do not expose
-these raw values to browsers. Deployment supported: Redis standalone only.
+Private protocol between gameplay's RedisRooms, room.lua and archive's RedisRoomEvents,
+which build the same key names from this page. Do not expose these raw values to browsers. Deployment supported: Redis standalone only.
 
 ## Keyspace
 

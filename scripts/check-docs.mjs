@@ -143,7 +143,7 @@ for (const file of walk(adrDir)) {
 // Documented package directions. This checks imports, not reflection or SQL ownership. A package that is not in the
 // map fails, so a new module registers in docs/architecture/backend.md and here before it enters the gate; the root
 // package holds the composition root and is not a module.
-const allowed = { bootstrap: ['identity', 'catalog', 'shared'], identity: ['shared'], catalog: ['identity', 'shared'], gameplay: ['identity', 'catalog', 'shared'], archive: ['identity', 'gameplay', 'shared'], shared: [] };
+const allowed = { bootstrap: ['identity', 'catalog', 'shared'], identity: ['shared'], catalog: ['identity', 'shared'], gameplay: ['identity', 'catalog', 'shared'], archive: ['identity', 'shared'], shared: [] };
 const source = path.join(root, 'backend/src/main/java/dev/sample/quiz');
 const unknown = new Set();
 for (const file of walk(source, f => f.endsWith('.java'))) {

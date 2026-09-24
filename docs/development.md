@@ -134,15 +134,15 @@ COMMAND_LIMIT capacity) map to the [acceptance scenarios](architecture/README.md
 | ANSWER-04 | NOT COVERED: RoomStore retry policy has no test harness | none |
 | ANSWER-06 | frontend/tests/room-connection.test.mjs ("socket open sends only SYNC ...", "REVOKED rejects late HTTP result ...") | node --test |
 | ANSWER-07 | NOT COVERED: RoomStore error policy has no test harness | none |
-| HIST-01 | NOT COVERED: cross-owner history access untested | none |
-| HIST-02 | NOT COVERED: ARCHIVE_NOT_READY untested | none |
+| HIST-01 | HistoryTest#resultsAreScopedToTheOwner (facade over an in-memory repository; the SQL owner clause has no separate test) | scripts/test |
+| HIST-02 | HistoryTest#unfinishedRoomIsNotReady | scripts/test |
 | HIST-04 | NOT COVERED: reading results after Redis key cleanup untested | none |
 | LIVE-01 | GameIntegrationTest#realCookiesCsrfAuthorizationReconnectAndArchiveReplay (stranger gets 403); GameIntegrationTest#websocketAuthenticatesByCookiePushesStateAndRejectsMutations (no session or bad Origin refused); GameIntegrationTest#deadlineMembershipAndNameChecksDoNotDependOnPostgres (intruder snapshot denied); scripts/test-room.lua membership check | scripts/test, Lua smoke |
 | LIVE-02 | GameIntegrationTest#deadlineMembershipAndNameChecksDoNotDependOnPostgres (DEADLINE_PASSED, timer reveal); scripts/test-room.lua "deadline equality rejects even before the timer runs", "room expiry finalizes once" | scripts/test, Lua smoke |
 | LIVE-03 | GameIntegrationTest#parallelRetriesProduceOneReceiptOneScoreAndOneAnswerEvent, #parallelCorrectPlayersGetDistinctRanksAndTierScores, #receiptSurvivesRoundTransitionAndConflictingAnswerIsRejected; scripts/test-room.lua "retries preserve receipt ...", "wrong answers do not consume a correct rank ..." | scripts/test, Lua smoke |
 | LIVE-04 | GameIntegrationTest#scoreAndCorrectOptionStayHiddenUntilReveal; scripts/test-room.lua "answer receipt and live snapshot hide result until reveal"; frontend/tests/room-state.test.mjs snapshot validator | scripts/test, Lua smoke, node --test |
 | LIVE-05 | GameIntegrationTest#websocketAuthenticatesByCookiePushesStateAndRejectsMutations (READ_ONLY_CHANNEL, STATE after a REST command); RoomWebSocketHubTest#burstAndSyncDoNotSpawnAnotherSnapshotWhileOneIsRunning (coalescing keeps the newest state); frontend/tests/room-connection.test.mjs ("LIVE-05 default timers call the globals without an object receiver", reconciliation must start in a real browser) | scripts/test, node --test |
-| LIVE-06 | GameIntegrationTest#realCookiesCsrfAuthorizationReconnectAndArchiveReplay (archive replay of an applied event is a no-op; FINISHED archived) | scripts/test |
+| LIVE-06 | GameIntegrationTest#realCookiesCsrfAuthorizationReconnectAndArchiveReplay (archive replay of an applied event is a no-op; FINISHED archived); ProjectionTest#replayIsANoOpAndGapsAreRejected (version gate and projection order over an in-memory repository) | scripts/test |
 | LIVE-07 | GameIntegrationTest#corruptKeyTypeIsRejectedBeforeAnyMutation; scripts/test-room.lua "corrupt type fails before writes"; the ROOM_STATE_LOST path is untested | scripts/test, Lua smoke |
 
 Browser E2E, slow-network load, Redis loss/OOM and full outage/recovery campaigns
@@ -307,13 +307,13 @@ change does.
 
 | Gate | Command | Latest result | Revision | Environment | Date | Run |
 |---|---|---|---|---|---|---|
-| Lua smoke | scripts/test-room.lua (lua-smoke stage) | PASS 10/10 | 8e5aa98 | Alpine 3.21 + Lua 5.4 container | 2026-09-24 | local scripts/verify |
-| Backend unit + integration | backend-test stage (clean test integrationTest bootJar) | PASS unit 11/11, integration 10/10, bootJar built | 8e5aa98 | Docker Desktop 29.7.2, eclipse-temurin:24-jdk, postgres:17-alpine, redis:7.4-alpine | 2026-09-24 | local scripts/verify |
-| Documentation lint | node scripts/check-docs.mjs (frontend-test stage) | PASS 36 documents, 237 links; rules links, wire, imports and L1 to L5 in fail mode, 0 warnings | 8e5aa98 | node:24.15.0 container | 2026-09-24 | local scripts/verify |
-| Documentation lint self-test | node --test scripts/check-docs.test.mjs (frontend-test stage) | PASS 4/4 | 8e5aa98 | node:24.15.0 container | 2026-09-24 | local scripts/verify |
-| Offline policy/lifecycle | node --test frontend/tests/*.test.mjs (frontend-test stage) | PASS 16/16 | 8e5aa98 | node:24.15.0 container | 2026-09-24 | local scripts/verify |
-| Angular build | npm run build (frontend-test stage) | PASS, application bundle generated | 8e5aa98 | node:24.15.0 container, Angular 22 | 2026-09-24 | local scripts/verify |
-| Full gate | ./scripts/verify | PASS, all stages above | 8e5aa98 | macOS host, Docker Desktop 29.7.2 | 2026-09-24 | local |
+| Lua smoke | scripts/test-room.lua (lua-smoke stage) | PASS 10/10 | faf3084 | Alpine 3.21 + Lua 5.4 container | 2026-09-24 | local scripts/verify |
+| Backend unit + integration | backend-test stage (clean test integrationTest bootJar) | PASS unit 14/14, integration 10/10, bootJar built | faf3084 | Docker Desktop 29.7.2, eclipse-temurin:24-jdk, postgres:17-alpine, redis:7.4-alpine | 2026-09-24 | local scripts/verify |
+| Documentation lint | node scripts/check-docs.mjs (frontend-test stage) | PASS 36 documents, 238 links; rules links, wire, imports and L1 to L5 in fail mode, 0 warnings | faf3084 | node:24.15.0 container | 2026-09-24 | local scripts/verify |
+| Documentation lint self-test | node --test scripts/check-docs.test.mjs (frontend-test stage) | PASS 4/4 | faf3084 | node:24.15.0 container | 2026-09-24 | local scripts/verify |
+| Offline policy/lifecycle | node --test frontend/tests/*.test.mjs (frontend-test stage) | PASS 16/16 | faf3084 | node:24.15.0 container | 2026-09-24 | local scripts/verify |
+| Angular build | npm run build (frontend-test stage) | PASS, application bundle generated | faf3084 | node:24.15.0 container, Angular 22 | 2026-09-24 | local scripts/verify |
+| Full gate | ./scripts/verify | PASS, all stages above | faf3084 | macOS host, Docker Desktop 29.7.2 | 2026-09-24 | local |
 | Release stack smoke | scripts/smoke-release | PASS: SPA served, /api proxied, CSRF enforced through nginx | 8ce5941 | macOS host, Docker Desktop 29.7.2, images built from Dockerfile.release | 2026-09-23 | local |
 | CI (GitHub Actions) | .github/workflows/ci.yml | PASS with warm caches: "verify gate" 118 s (Gradle build 35 s, npm install 7 s, both caches hit), "release images from verified artifacts" 47 s. Cold-cache run 35892588183: 170 s and 44 s. Before ADR 0007: 189 s and 131 s (run 35891087371). Two earlier runs failed at startup while Actions was disabled for the account; fixed by the owner on 2026-09-23 | 82dc8b0 | ubuntu-latest runner, Docker from the runner image, actions on Node 24 | 2026-09-24 | https://github.com/tungnguyenitvn/kahoot/actions/runs/35893152449 |
 | Release (GitHub Actions) | .github/workflows/release.yml | PASS for tag v0.2.2, started by the tag push: verify, package, smoke, images pushed as ghcr.io/tungnguyenitvn/kahoot-backend and kahoot-frontend (v0.2.2 and latest, anonymously pullable), GitHub Release with quiz-room-v0.2.2.jar. Earlier: v0.2.1 (run 35899396562, 164 s) and v0.2.0 (run 35896369794, dispatched by hand because the tagged commit carried [skip ci]). v0.2.0 and v0.2.1 are superseded: their frontend fails in a browser (see the next row) | 0e2ef6e (tag v0.2.2) | ubuntu-latest runner, Docker from the runner image | 2026-09-24 | https://github.com/tungnguyenitvn/kahoot/actions/runs/35900688309 |
