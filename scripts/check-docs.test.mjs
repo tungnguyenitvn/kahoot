@@ -49,3 +49,34 @@ test('imports: the root package is the composition root, not a module', () => {
   const { status, out } = lint(fixture({ [`${javaRoot}/QuizApplication.java`]: java('', []) }));
   assert.equal(status, 0, out);
 });
+
+test('layers: another module may import only application and domain, never api or infrastructure', () => {
+  const { status, out } = lint(fixture({ [`${javaRoot}/gameplay/application/X.java`]: java('gameplay.application', ['catalog.infrastructure.JdbcQuizRepository']) }));
+  assert.equal(status, 1, out);
+  assert.match(out, /\[imports\] .*private layer catalog\.infrastructure/);
+});
+
+test('layers: domain imports the JDK and domain types only', () => {
+  const { status, out } = lint(fixture({ [`${javaRoot}/catalog/domain/X.java`]: 'package dev.sample.quiz.catalog.domain;\nimport org.springframework.stereotype.Service;\nimport dev.sample.quiz.shared.ApiException;\npublic class X {}\n' }));
+  assert.equal(status, 1, out);
+  assert.match(out, /\[imports\] .*domain imports org\.springframework\.stereotype\.Service/);
+  assert.match(out, /\[imports\] .*domain imports dev\.sample\.quiz\.shared\.ApiException/);
+});
+
+test('layers: application never depends on its own api or infrastructure', () => {
+  const { status, out } = lint(fixture({ [`${javaRoot}/catalog/application/X.java`]: java('catalog.application', ['catalog.infrastructure.JdbcQuizRepository', 'catalog.api.QuizController']) }));
+  assert.equal(status, 1, out);
+  assert.match(out, /\[imports\] .*application imports catalog\.infrastructure/);
+  assert.match(out, /\[imports\] .*application imports catalog\.api/);
+});
+
+test('layers: a layered module with the documented directions passes', () => {
+  const { status, out } = lint(fixture({
+    [`${javaRoot}/catalog/api/C.java`]: java('catalog.api', ['catalog.application.QuizCatalog', 'catalog.domain.Quiz', 'identity.application.Identities']),
+    [`${javaRoot}/catalog/application/S.java`]: java('catalog.application', ['catalog.domain.Quiz', 'shared.ApiException']),
+    [`${javaRoot}/catalog/domain/Q.java`]: 'package dev.sample.quiz.catalog.domain;\nimport java.util.List;\nimport dev.sample.quiz.identity.domain.Identity;\npublic record Q() {}\n',
+    [`${javaRoot}/catalog/infrastructure/R.java`]: java('catalog.infrastructure', ['catalog.application.QuizRepository', 'catalog.domain.Quiz']),
+    [`${javaRoot}/gameplay/RoomService.java`]: java('gameplay', ['catalog.application.QuizCatalog', 'catalog.domain.QuizStatus']),
+  }));
+  assert.equal(status, 0, out);
+});
