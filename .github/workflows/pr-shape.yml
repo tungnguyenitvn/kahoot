@@ -1,0 +1,22 @@
+name: pr-shape
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened]
+permissions:
+  contents: read
+# Its own group, so editing a title or a description never cancels a running verify gate.
+concurrency:
+  group: pr-shape-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+jobs:
+  shape:
+    name: pull request shape
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7
+      - name: Title is a conventional commit subject and every template section is filled
+        env:
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_BODY: ${{ github.event.pull_request.body }}
+        run: node scripts/check-pr.mjs

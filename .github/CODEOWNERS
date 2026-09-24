@@ -1,0 +1,28 @@
+# Review ownership for the files that carry accepted requirements and their evidence.
+# GitHub requests these owners on every pull request that touches a path; the ruleset
+# decides whether their approval is required (docs/development.md#delivery). A regression
+# test, a contract or a domain invariant is never edited without its owner's review.
+
+# Requirements and their proof
+/docs/domain.md                     @tungnguyenitvn
+/docs/contracts/                    @tungnguyenitvn
+/docs/adr/                          @tungnguyenitvn
+/docs/development.md                @tungnguyenitvn
+
+# Tests are the locked evidence for an acceptance ID
+/backend/src/test/                  @tungnguyenitvn
+/backend/src/integrationTest/       @tungnguyenitvn
+/frontend/tests/                    @tungnguyenitvn
+/frontend/src/app/**/*.spec.ts      @tungnguyenitvn
+/scripts/test-room.lua              @tungnguyenitvn
+/e2e/tests/                         @tungnguyenitvn
+
+# Gates, lints and the working agreement
+/scripts/check-docs.mjs             @tungnguyenitvn
+/scripts/check-pr.mjs               @tungnguyenitvn
+/scripts/verify                     @tungnguyenitvn
+/.github/                           @tungnguyenitvn
+/AGENTS.md                          @tungnguyenitvn
+/backend/AGENTS.md                  @tungnguyenitvn
+/frontend/AGENTS.md                 @tungnguyenitvn
+/e2e/AGENTS.md                      @tungnguyenitvn

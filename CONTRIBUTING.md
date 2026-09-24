@@ -51,7 +51,9 @@ Examples: `feature/round-timer-display`, `fix/stale-round-rejection`, `chore/gra
 Follow the change protocol in AGENTS.md and the [workflow](docs/development.md#workflow):
 
 - Bug: reproduce, write the failing regression test, fix, rerun. The test name or its
-  `@DisplayName` carries the acceptance ID it proves.
+  `@DisplayName` carries the acceptance ID it proves. A regression test is never edited
+  to make it pass; `.github/CODEOWNERS` requests the owner's review on every change under
+  a test directory.
 - Feature: agree scope and acceptance IDs, update the feature or domain document, write
   the tests, then the code.
 - Contract change: update the contract document in the same change; deviations from
@@ -121,6 +123,7 @@ The rules are in the [frontend architecture](docs/architecture/frontend.md).
 ```bash
 node scripts/check-docs.mjs
 node --test scripts/check-docs.test.mjs
+node --test scripts/check-pr.test.mjs
 node --test "frontend/tests/**/*.test.mjs"
 ./scripts/verify   # also runs the Angular component specs (npm run test:ui, Vitest in the container)
 ```
@@ -148,7 +151,11 @@ check as if it were the full one.
 ## 7. Open the pull request
 
 The template in `.github/pull_request_template.md` is the checklist; a good pull
-request fills every section:
+request fills every section. The `pull request shape` check fails a title that is not
+a conventional commit subject and a body with a missing or unfilled section, with no
+docs box ticked, with no verification box ticked and no `NOT RUN`, or with no change
+status named; it runs again when you edit the title or the description. Run it locally
+with `PR_TITLE=... PR_BODY="$(cat body.md)" node scripts/check-pr.mjs`.
 
 - Title: the conventional commit subject; it becomes the squash commit on `main`.
 - Related issue / ADR: the issue number and the ADR if one exists.
@@ -171,9 +178,13 @@ on the approach. Reference the pull request from the issue.
 
 ## 8. CI and review
 
-- CI runs the `verify gate` and `release images from verified artifacts` jobs on every
-  pull request; both must be green. Read a failure from the job log or the
-  `verification-reports` artifact, fix it on the branch and push again.
+- CI runs the `verify gate`, `release images from verified artifacts` and
+  `pull request shape` jobs on every pull request; all must be green. Read a failure
+  from the job log or the `verification-reports` artifact, fix it on the branch and push
+  again.
+- `.github/CODEOWNERS` requests the owner of the domain invariants, contracts, ADRs,
+  tests, lints and workflows as reviewer when a pull request touches them; which
+  approvals the ruleset requires is in [delivery](docs/development.md#required-checks-before-a-merge).
 - Reviewers check, in this order: the invariants in AGENTS.md, that contracts and
   documents match the code, that every claimed acceptance ID has a test and a
   traceability row, that the evidence block is real and names its revision, that no

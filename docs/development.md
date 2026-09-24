@@ -96,9 +96,10 @@ that only asks to review files.
 | Lua smoke | scripts/test-room.lua, run by scripts/verify in a Lua 5.4 container (lua-smoke service); locally texlua or any Lua 5.3/5.4 | Sequential invariants with Redis double; NOT Redis concurrency/durability |
 | Documentation checks | node scripts/check-docs.mjs | Local links and documentation boundary rules; NOT semantic completeness |
 | Documentation lint self-test | node --test scripts/check-docs.test.mjs | The lint's own rules against fixture trees (module matrix, unknown package, composition root, layer directions and privacy, frontend folder boundaries); NOT the repository content |
+| Pull request shape | node scripts/check-pr.mjs with PR_TITLE and PR_BODY (workflow `pr-shape` on every pull request event); its self-test node --test scripts/check-pr.test.mjs runs in the frontend-test stage | The title is a conventional commit subject and every section of the pull request template is filled by the author, a docs box is ticked, a verification box is ticked or NOT RUN is written, a change status is named; NOT that the evidence is true, that the IDs exist or that the docs match the code |
 | Backend unit | Docker scripts/test or Gradle test in configured JDK | Mockito fault injection/coalescing tests; NOT real services |
 | Backend integration | scripts/test | Real HTTP/cookies/WS/Redis/SQL behavior in isolated services |
-| Full gate | scripts/verify | Lua smoke, backend tests/package, documentation check and its self-test, Node policy tests, Angular component specs and build |
+| Full gate | scripts/verify | Lua smoke, backend tests/package, documentation check and its self-test, the pull request check's self-test, Node policy tests, Angular component specs and build |
 | Published stack in a browser | ./e2e/run (Playwright 1.63, Chromium headless shell 153, release stack from the local artifacts) | PASS 1/1 in 4.7 s: host login, open room, deep link reload, WebSocket badge live through nginx, guest joins by PIN, host starts, guest answers A and sees "Đã ghi nhận đáp án A.", reveal shows 1000 on both screens, host finishes, GET /api/history/{id} returns 1000 after the archive commits. First run found that the browser origin must match PUBLIC_ORIGIN (127.0.0.1 vs localhost), fixed in e2e/run. Earlier manual check on v0.2.2 is in git history | b01ed62 (images built from the Java 25 artifacts) | macOS host, Docker Desktop 29.7.2, Node 22.22.3 for Playwright | 2026-09-24 | local ./e2e/run |
 
 Read the [verification status](#gate-status) for the latest executed
@@ -202,6 +203,7 @@ production (artifact promotion), not a separate branch.
 | Trigger | Workflow and job | Runs | Publishes |
 |---|---|---|---|
 | Pull request, push to `main`, manual | `ci` / `verify gate` | scripts/verify with the Gradle and npm caches restored: Lua smoke, backend unit and integration tests plus bootJar, documentation lint, Node tests, Angular build | Workflow artifacts `verification-reports` and `build-artifacts` (boot jar, Angular bundle) |
+| Pull request opened, edited, synchronized or reopened | `pr-shape` / `pull request shape` | scripts/check-pr.mjs on the title and the body ([testing](#testing-and-evidence)); its own concurrency group, so an edit never cancels a running gate | Nothing |
 | Same run, after `verify gate` | `ci` / `release images from verified artifacts` | scripts/smoke-release on the downloaded artifacts: package the release images, boot compose.release.yaml, check the SPA, the API proxy and CSRF | Nothing |
 | Tag `v*`, manual | `release` / `verify, package, smoke, publish` | scripts/verify on the tagged tree, scripts/smoke-release on its artifacts, push to GHCR, GitHub Release | `ghcr.io/<owner>/kahoot-backend` and `kahoot-frontend` with the tag and `latest`, artifact `release-jar`, a GitHub Release carrying the jar |
 
@@ -211,15 +213,24 @@ through a pull request like any other change and starts a normal `ci` run; the m
 
 ### Required checks before a merge
 
-Both `ci` jobs, `verify gate` and `release images from verified artifacts`, must be
-green before a merge. The ruleset `main` (Settings, Rules, Rulesets) enforces it:
-changes reach `main` through a pull request, both status checks must pass, force
-pushes and branch deletion are blocked, and repository admins stay on the bypass list
-so a broken pipeline can never lock the owner out; a bypassed push is recorded by
-GitHub and should be the exception. Merge methods merge, squash and rebase are all
-allowed. No review count is required yet; add one in the ruleset once the project has
-more than one maintainer. The ruleset id and its state are recorded in the
-[verification status](#gate-status).
+Three checks must be green before a merge: the `ci` jobs `verify gate` and
+`release images from verified artifacts`, and the `pr-shape` job `pull request shape`.
+The ruleset `main` (Settings, Rules, Rulesets) enforces it: changes reach `main` through
+a pull request, the required status checks must pass, force pushes and branch deletion
+are blocked, and repository admins stay on the bypass list so a broken pipeline can
+never lock the owner out; a bypassed push is recorded by GitHub and should be the
+exception. Merge methods merge, squash and rebase are all allowed. The
+[verification status](#gate-status) records the ruleset id and which of the three
+checks it requires today; a new check is added to the ruleset by the owner after its
+first green run.
+
+`.github/CODEOWNERS` names the owner of the requirements and their evidence: the domain
+invariants, the contracts, the ADRs, this page, every test directory, the lints, the
+workflows and the AGENTS files. GitHub requests that owner as reviewer on a pull
+request that touches one of these paths, so a regression test, a contract or an
+invariant is never changed unnoticed. No review count is required yet; once the
+project has more than one maintainer, the ruleset gains one required approval and
+"require review from code owners", and the file gains a second name per area.
 
 ### Cutting a release
 
@@ -318,6 +329,7 @@ change does.
 | Backend unit + integration | backend-test stage (clean test integrationTest bootJar) | PASS unit 17/17, integration 10/10, bootJar built | 4eb108a | Docker Desktop 29.7.2, eclipse-temurin:25-jdk (Temurin 25.0.4 LTS), Gradle 9.7.1, postgres:17-alpine, redis:7.4-alpine | 2026-09-24 | local scripts/verify |
 | Documentation lint | node scripts/check-docs.mjs (frontend-test stage) | PASS 38 documents, 246 links; rules links, wire, imports, frontend and L1 to L5 in fail mode, 0 warnings | 4eb108a | node:24.15.0 container | 2026-09-24 | local scripts/verify |
 | Documentation lint self-test | node --test scripts/check-docs.test.mjs (frontend-test stage) | PASS 12/12 | 4eb108a | node:24.15.0 container | 2026-09-24 | local scripts/verify |
+| Pull request shape | node scripts/check-pr.mjs (workflow pr-shape); self-test node --test scripts/check-pr.test.mjs (frontend-test stage) | PASS on pull request 27, job "pull request shape" 4 s; self-test PASS 8/8 in the gate; the titles and bodies of the merged pull requests 1, 3, 19, 22 and 26 pass the check locally | 747b422 | ubuntu-latest runner, Node from the runner image; replay on macOS host, Node 22.22.3 | 2026-09-24 | https://github.com/tungnguyenitvn/kahoot/actions/runs/35972509412 |
 | Offline policy/lifecycle | node --test "frontend/tests/**/*.test.mjs" (frontend-test stage) | PASS 19/19 | 4eb108a | node:24.15.0 container | 2026-09-24 | local scripts/verify |
 | Angular component specs | npm run test:ui (frontend-test stage) | PASS 5/5 in 4 files | 4eb108a | node:24.15.0 container, Vitest 4.1, jsdom 30 | 2026-09-24 | local scripts/verify |
 | Angular build | npm run build (frontend-test stage) | PASS, application bundle generated | 4eb108a | node:24.15.0 container, Angular 22 | 2026-09-24 | local scripts/verify |
@@ -326,4 +338,4 @@ change does.
 | CI (GitHub Actions) | .github/workflows/ci.yml | PASS with warm caches: "verify gate" 118 s (Gradle build 35 s, npm install 7 s, both caches hit), "release images from verified artifacts" 47 s. Cold-cache run 35892588183: 170 s and 44 s. Before ADR 0007: 189 s and 131 s (run 35891087371). Two earlier runs failed at startup while Actions was disabled for the account; fixed by the owner on 2026-09-23 | 82dc8b0 | ubuntu-latest runner, Docker from the runner image, actions on Node 24 | 2026-09-24 | https://github.com/tungnguyenitvn/kahoot/actions/runs/35893152449 |
 | Release (GitHub Actions) | .github/workflows/release.yml | PASS for tag v0.3.0, started by the tag push: verify, package, smoke, images pushed as ghcr.io/tungnguyenitvn/kahoot-backend and kahoot-frontend (v0.3.0 and latest, the first on eclipse-temurin:25-jre), GitHub Release with quiz-room-v0.3.0.jar; job "verify, package, smoke, publish" 133 s. Earlier tags v0.2.0 to v0.2.2 are in git history | 8b405c9 (tag v0.3.0) | ubuntu-latest runner, Docker from the runner image | 2026-09-24 | https://github.com/tungnguyenitvn/kahoot/actions/runs/35963617118 |
 | Published stack in a browser | docker compose -f compose.release.yaml with the GHCR images, Claude desktop browser | PASS 1/1 in 9.4 s against the pulled GHCR images (docker compose -f compose.release.yaml with BACKEND_IMAGE and FRONTEND_IMAGE at v0.3.0, no build; backend reports Temurin 25.0.4 LTS): host login, open room, deep-link reload, WebSocket badge live through nginx, guest joins by PIN, host starts, guest answers A and sees "Đã ghi nhận đáp án A.", reveal shows 1000 on both screens, host finishes, GET /api/history/{id} returns 1000 after the archive commits. Also PASS on the local artifacts of b01ed62 (4.7 s) | 8b405c9 (images v0.3.0) | macOS host, Docker Desktop 29.7.2, amd64 images under emulation, Playwright 1.63.0, Chromium headless shell 153, Node 22.22.3 | 2026-09-24 | local: e2e/ npm test with E2E_BASE_URL |
-| Branch protection on main | GitHub ruleset `main` (id 23892021) | ENABLED: pull request required, status checks `verify gate` and `release images from verified artifacts` required, force push and deletion blocked, repository admins on the bypass list; no review count yet, see [delivery](#delivery) | none | github.com, repository public since 2026-09-24 | 2026-09-24 | none |
+| Branch protection on main | GitHub ruleset `main` (id 23892021) | ENABLED: pull request required, status checks `verify gate` and `release images from verified artifacts` required, force push and deletion blocked, repository admins on the bypass list; `pull request shape` not yet required and no review count yet, see [delivery](#delivery) | none | github.com, repository public since 2026-09-24 | 2026-09-24 | none |
