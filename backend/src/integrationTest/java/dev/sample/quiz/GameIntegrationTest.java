@@ -2,7 +2,7 @@ package dev.sample.quiz;
 
 import dev.sample.quiz.archive.application.Projection;
 import dev.sample.quiz.archive.domain.RoomEvent;
-import dev.sample.quiz.gameplay.RedisRooms;
+import dev.sample.quiz.gameplay.infrastructure.LuaRooms;
 import dev.sample.quiz.shared.ApiException;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,7 +21,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest(webEnvironment=SpringBootTest.WebEnvironment.RANDOM_PORT)
 class GameIntegrationTest {
-    @Autowired RedisRooms rooms;
+    @Autowired LuaRooms rooms; // the composition-root test drives the Lua adapter directly for fixtures
     @Autowired StringRedisTemplate redis;
     @Autowired ObjectMapper json;
     @Autowired JdbcTemplate db;
@@ -39,7 +39,7 @@ class GameIntegrationTest {
     private JsonNode control(String id,String action,String round,String command){return rooms.command(id,action,host,Map.of("roundId",round,"commandId",command));}
     private JsonNode answer(String id,String principal,String round,int option){return rooms.command(id,"answer",principal,Map.of("roundId",round,"option",option,"commandId",UUID.randomUUID().toString()));}
     private JsonNode snapshot(String id,String principal){return rooms.command(id,"snapshot",principal,Map.of());}
-    @AfterEach void clean(){for(String id:fixtures){redis.opsForSet().remove(RedisRooms.ACTIVE,id);redis.delete(RedisRooms.keys(id));}}
+    @AfterEach void clean(){for(String id:fixtures){redis.opsForSet().remove(LuaRooms.ACTIVE,id);redis.delete(LuaRooms.keys(id));}}
 
     @Test @DisplayName("LIVE-03 parallel retries produce one receipt, one score and one event")
     void parallelRetriesProduceOneReceiptOneScoreAndOneAnswerEvent() throws Exception {
@@ -48,10 +48,10 @@ class GameIntegrationTest {
         try(var pool=Executors.newVirtualThreadPerTaskExecutor()){
             var results=pool.invokeAll(jobs);Set<String> receipts=new HashSet<>();for(var f:results)receipts.add(f.get());assertEquals(1,receipts.size());
         }
-        assertEquals(1L,redis.opsForHash().size(RedisRooms.keys(id).get(3)));
-        assertEquals(4L,redis.opsForStream().size(RedisRooms.keys(id).get(7))); // create, join, start, one answer
+        assertEquals(1L,redis.opsForHash().size(LuaRooms.keys(id).get(3)));
+        assertEquals(4L,redis.opsForStream().size(LuaRooms.keys(id).get(7))); // create, join, start, one answer
         assertEquals(1,rooms.meta(id).path("correctCount").asInt());
-        assertEquals(1000d,redis.opsForZSet().score(RedisRooms.keys(id).get(4),snapshot(id,"G:p").path("me").path("participantId").asText()));
+        assertEquals(1000d,redis.opsForZSet().score(LuaRooms.keys(id).get(4),snapshot(id,"G:p").path("me").path("participantId").asText()));
     }
     @Test @DisplayName("LIVE-03 concurrent correct answers get distinct ranks and tier scores")
     void parallelCorrectPlayersGetDistinctRanksAndTierScores() throws Exception {
@@ -59,7 +59,7 @@ class GameIntegrationTest {
         List<Callable<JsonNode>> jobs=new ArrayList<>();for(int i=0;i<20;i++){String p="G:p"+i;jobs.add(()->answer(id,p,"one",0));}
         try(var pool=Executors.newVirtualThreadPerTaskExecutor()){for(var f:pool.invokeAll(jobs))f.get();}
         Set<Integer> ranks=new HashSet<>();int total=0;
-        for(Object raw:redis.opsForHash().values(RedisRooms.keys(id).get(3))){var receipt=json.readTree(raw.toString());ranks.add(receipt.path("correctOrder").asInt());total+=receipt.path("points").asInt();}
+        for(Object raw:redis.opsForHash().values(LuaRooms.keys(id).get(3))){var receipt=json.readTree(raw.toString());ranks.add(receipt.path("correctOrder").asInt());total+=receipt.path("points").asInt();}
         assertEquals(20,ranks.size());assertTrue(ranks.contains(1)&&ranks.contains(20));assertEquals(11500,total);
     }
     @Test @DisplayName("LIVE-03 ROOM-03 receipt survives round transition; conflicting answer and stale round are rejected")
@@ -89,7 +89,7 @@ class GameIntegrationTest {
         assertEquals("NAME_TAKEN",assertThrows(ApiException.class,()->join(id,"g:a")).code);
         assertEquals("ROOM_ACCESS_DENIED",assertThrows(ApiException.class,()->snapshot(id,"G:intruder")).code);
         control(id,"start","","s");
-        var meta=(tools.jackson.databind.node.ObjectNode)rooms.meta(id);meta.put("deadline",0);redis.opsForValue().set(RedisRooms.keys(id).get(0),meta.toString());
+        var meta=(tools.jackson.databind.node.ObjectNode)rooms.meta(id);meta.put("deadline",0);redis.opsForValue().set(LuaRooms.keys(id).get(0),meta.toString());
         assertEquals("DEADLINE_PASSED",assertThrows(ApiException.class,()->answer(id,"G:A","one",0)).code);
         rooms.command(id,"tick","system",Map.of());assertEquals("REVEAL",snapshot(id,host).path("phase").asText());
         String participant=snapshot(id,"G:A").path("me").path("participantId").asText();
@@ -100,20 +100,20 @@ class GameIntegrationTest {
     @Test @DisplayName("LIVE-07 corrupt key type is rejected before any mutation")
     void corruptKeyTypeIsRejectedBeforeAnyMutation(){
         String id=create();join(id,"G:p");control(id,"start","","s");
-        var before=rooms.meta(id);redis.delete(RedisRooms.keys(id).get(4));redis.opsForValue().set(RedisRooms.keys(id).get(4),"wrong-type");
+        var before=rooms.meta(id);redis.delete(LuaRooms.keys(id).get(4));redis.opsForValue().set(LuaRooms.keys(id).get(4),"wrong-type");
         assertEquals("STATE_CORRUPT",assertThrows(ApiException.class,()->answer(id,"G:p","one",0)).code);
-        assertEquals(before,rooms.meta(id));assertEquals(0L,redis.opsForHash().size(RedisRooms.keys(id).get(3)));
+        assertEquals(before,rooms.meta(id));assertEquals(0L,redis.opsForHash().size(LuaRooms.keys(id).get(3)));
     }
     @Test @DisplayName("STUDIO-05 active registration repairs live state but never resurrects a finished room")
     void activeRegistrationRepairsLiveStateButNeverResurrectsFinishedRoom(){
         String id=create();rooms.registerActive(id);
-        assertEquals(Boolean.TRUE,redis.opsForSet().isMember(RedisRooms.ACTIVE,id));
-        redis.opsForSet().remove(RedisRooms.ACTIVE,id);rooms.registerActive(id);
-        assertEquals(Boolean.TRUE,redis.opsForSet().isMember(RedisRooms.ACTIVE,id));
+        assertEquals(Boolean.TRUE,redis.opsForSet().isMember(LuaRooms.ACTIVE,id));
+        redis.opsForSet().remove(LuaRooms.ACTIVE,id);rooms.registerActive(id);
+        assertEquals(Boolean.TRUE,redis.opsForSet().isMember(LuaRooms.ACTIVE,id));
         var meta=(tools.jackson.databind.node.ObjectNode)rooms.meta(id);meta.put("expiresAt",0);
-        redis.opsForValue().set(RedisRooms.keys(id).get(0),meta.toString());rooms.command(id,"tick","",Map.of());
-        redis.opsForSet().remove(RedisRooms.ACTIVE,id);rooms.registerActive(id);
-        assertEquals(Boolean.FALSE,redis.opsForSet().isMember(RedisRooms.ACTIVE,id));
+        redis.opsForValue().set(LuaRooms.keys(id).get(0),meta.toString());rooms.command(id,"tick","",Map.of());
+        redis.opsForSet().remove(LuaRooms.ACTIVE,id);rooms.registerActive(id);
+        assertEquals(Boolean.FALSE,redis.opsForSet().isMember(LuaRooms.ACTIVE,id));
     }
     @Test void hostCommandLedgerCapacityIsAConflictNotARateLimit(){
         String id=create();join(id,"G:p");

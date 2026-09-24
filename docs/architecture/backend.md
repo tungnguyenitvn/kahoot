@@ -15,7 +15,7 @@ to [conventions](../development.md#conventions) and every numeric value to the
 |---|---|---|---|
 | identity | Host accounts, guest and host session identity, HTTP security | `domain.Identity`, `domain.Account`; `application.Identities` (current, ensure, host), `Accounts` (register, find); `Sessions` port (liveness) | [identity/catalog](#identity-and-catalog) |
 | catalog | Host-owned draft and published quizzes | `application.QuizCatalog` facade; `domain.Quiz`, `Question`, `Draft`, `QuizStatus` | [identity/catalog](#identity-and-catalog) |
-| gameplay | Room provisioning, live commands, snapshots, realtime delivery | `Rooms` facade (create, join, snapshot, answer, control) | [gameplay](#gameplay), [realtime](#realtime-delivery) |
+| gameplay | Room provisioning, live commands, snapshots, realtime delivery | `application.Rooms` facade (create, join, snapshot, answer, control); ports `RoomCommands`, `RoomRegistry`, `RoomProvisioning`, `Notifier`; `domain.RoomContent`, `Nickname`, `RoomId` | [gameplay](#gameplay), [realtime](#realtime-delivery) |
 | archive | Ordered event projection and host history | `application.Projection` (apply one event), `Archiver` (one pass), `History` read facade; `domain.RoomEvent`, `EventType`, `HistoryRoom`, `HistoryResult` | [archive](#archive) |
 | shared | Technical policy: API error mapping, scheduling, store configuration | Exceptions and configuration | none |
 | bootstrap | Composition root: demo seed at startup | none | none |
@@ -176,9 +176,7 @@ it from this table.
 
 | Gap | Current state | Target |
 |---|---|---|
-| Layers | catalog, identity and archive have the four layers; gameplay is a flat package with the role in the class-name suffix | api / application / domain / infrastructure per module |
-| gameplay stores | `RoomService` runs JDBC for game_room provisioning and calls Redis directly | JDBC and Redis behind ports in `gameplay.infrastructure` |
-| Command pre-validation | Name and PIN checks live in `RoomService` | `gameplay.domain` command types |
+| Layers | catalog, identity, archive and the command side of gameplay have the four layers; gameplay's WebSocket hub, handler, handshake, config and timer are still flat | api / application / domain / infrastructure per module |
 
 ## Module designs
 
@@ -229,9 +227,16 @@ Wire schema and validation limits: [REST](../contracts/rest-api.md).
 
 #### Invariant ownership
 
-[Domain rules](../domain.md) are canonical. RedisRooms invokes room.lua with
-the eight same-room keys listed in the [Redis contract](../contracts/redis-room.md).
-Lua owns membership, phase, deadline, accepted answers, score and event version.
+[Domain rules](../domain.md) are canonical. `infrastructure.LuaRooms`, behind the
+`RoomCommands` port, invokes room.lua with the eight same-room keys listed in the
+[Redis contract](../contracts/redis-room.md). Lua owns membership, phase, deadline,
+accepted answers, score and event version. `application.Rooms` is the facade; it never
+decides a live outcome, it forwards commands and turns port results into responses.
+`domain.Nickname` (trim, bound, case-insensitive key), `RoomId` (deterministic from
+host identity + commandId) and `RoomContent` (the frozen quiz with generated round ids)
+are the checks that need no store; ports `RoomRegistry` (active set, PIN reservations,
+`infrastructure.RedisRoomRegistry`) and `RoomProvisioning` (game_room provisioning
+columns, `infrastructure.JdbcRoomProvisioning`) hold the rest of the state.
 
 Correct order is the acceptance order at Redis (LIVE-02 in the domain rules).
 Snapshot filtering happens before data leaves Redis. The visible-score ZSET advances
@@ -285,14 +290,14 @@ Host controls have a separate command ledger and fingerprint. See the
 sequenceDiagram
   participant B as Browser (RoomStore)
   participant C as RoomController
-  participant S as RoomService
+  participant S as Rooms
   participant R as Redis (room.lua)
   participant H as RoomWebSocketHub
   B->>C: POST /api/rooms/{id}/answers {roundId, option, commandId}
   C->>S: answer(identity, roundId, option, commandId)
   S->>R: EVAL answer: membership, existing receipt, phase/round/deadline, order and points, HSET + ZINCRBY + XADD
   R-->>S: public receipt, or {status, code}
-  S->>H: broadcast(roomId) marks connections dirty, nothing awaited
+  S->>H: Notifier.broadcast(roomId) marks connections dirty, nothing awaited
   S-->>B: 200 AnswerReceipt, or the error envelope
   H-->>B: STATE snapshot later, coalesced and best effort
 ~~~
@@ -308,7 +313,8 @@ Timer runs after a fixed delay plus work duration (value in the
 [limits table](README.md#limits-and-timings)); it is not an exact clock.
 Answers compare Redis TIME directly against deadline.
 
-Tests: Lua smoke, real Redis/HTTP integration, provisioning fault-injection unit tests.
+Tests: Lua smoke, real Redis/HTTP integration, provisioning fault-injection unit tests
+over the ports (RoomsTest), domain invariants (RoomDomainTest).
 
 ### Archive
 
