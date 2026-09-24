@@ -38,7 +38,7 @@ function links(file) {
 
 // Files under lint: docs/, root documents, the AGENTS files and GitHub templates (L6).
 const docs = walk(docsRoot);
-const extra = ['README.md', 'CONTRIBUTING.md', 'AGENTS.md', 'backend/AGENTS.md', 'frontend/AGENTS.md'].map(f => path.join(root, f)).filter(fs.existsSync);
+const extra = ['README.md', 'CONTRIBUTING.md', 'AGENTS.md', 'backend/AGENTS.md', 'frontend/AGENTS.md', 'e2e/AGENTS.md'].map(f => path.join(root, f)).filter(fs.existsSync);
 const github = fs.existsSync(path.join(root, '.github')) ? walk(path.join(root, '.github')) : [];
 const files = [...docs, ...extra, ...github];
 

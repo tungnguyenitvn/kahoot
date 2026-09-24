@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+# Boots the release stack from the verified artifacts, runs the Playwright check against it, tears it down.
+# By hand before a release (docs/development.md, Delivery); not part of scripts/verify or CI by decision.
+# BUILD_ARTIFACTS=1 builds the jar and the bundle first; E2E_KEEP=1 leaves the stack running for a look.
+set -euo pipefail
+cd "$(dirname "$0")/.."
+export DB_PASSWORD="${DB_PASSWORD:-smoke-only}" DEMO_PASSWORD="${DEMO_PASSWORD:-smoke-only}"
+export PUBLIC_PORT="${PUBLIC_PORT:-8081}"
+# The browser opens this origin, so the WebSocket Origin check must allow exactly it (docs/architecture/README.md, Deployment).
+export PUBLIC_ORIGIN="${PUBLIC_ORIGIN:-http://127.0.0.1:${PUBLIC_PORT}}"
+export E2E_HOST_PASSWORD="${E2E_HOST_PASSWORD:-$DEMO_PASSWORD}"
+if [ "${BUILD_ARTIFACTS:-0}" = "1" ]; then
+  docker compose -f compose.test.yaml run --build --rm backend-test bootJar --no-daemon
+  docker compose -f compose.test.yaml run --build --rm frontend-test sh -c "npm run build"
+  docker compose -f compose.test.yaml down --remove-orphans
+fi
+for artifact in backend/build/libs/quiz-room.jar frontend/dist/quiz-room-ui/browser/index.html; do
+  [ -f "$artifact" ] || { echo "missing $artifact: run ./scripts/verify first, or BUILD_ARTIFACTS=1 $0"; exit 1; }
+done
+[ -d e2e/node_modules ] || (cd e2e && npm ci --no-audit --no-fund && npm run install-browser)
+compose() { docker compose -f compose.release.yaml "$@"; }
+if [ "${E2E_KEEP:-0}" != "1" ]; then trap 'compose down --volumes --remove-orphans' EXIT; fi
+compose config --quiet
+[ "${SKIP_BUILD:-0}" = "1" ] || compose build
+compose up -d
+base="http://127.0.0.1:${PUBLIC_PORT}"
+for i in $(seq 1 60); do
+  curl -fsS "$base/api/auth/csrf" >/dev/null 2>&1 && break
+  if [ "$i" = 60 ]; then echo "release stack did not answer within 3 minutes"; compose logs --tail 50 backend frontend; exit 1; fi
+  sleep 3
+done
+(cd e2e && E2E_BASE_URL="$base" npm test)
+printf 'e2e OK against %s (images built from the local artifacts)\n' "$base"

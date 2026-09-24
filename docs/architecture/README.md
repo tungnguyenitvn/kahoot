@@ -181,8 +181,8 @@ rate. Set thresholds with the product owner BEFORE the load run, not afterwards.
 - PIN registry loss/collision is not automatically repaired; operator intervention
   is required. Provisioning repair assumes the existing PIN mapping survives.
 - No automated Redis data-loss recovery, poison-event quarantine or cluster support.
-- No production metrics exporter, login/join rate limiter, browser E2E suite or
-  accessibility audit yet.
+- No production metrics exporter, login/join rate limiter or accessibility audit yet;
+  the browser check (`e2e/run`) is a release step, not a gate.
 - JDBC/Redis pool sizing, session fixation effects on active WS and cross-tab logout
   need production-specific testing.
 - Draft save is not server-idempotent; ambiguous timeouts require catalog inspection.

@@ -99,6 +99,7 @@ that only asks to review files.
 | Backend unit | Docker scripts/test or Gradle test in configured JDK | Mockito fault injection/coalescing tests; NOT real services |
 | Backend integration | scripts/test | Real HTTP/cookies/WS/Redis/SQL behavior in isolated services |
 | Full gate | scripts/verify | Lua smoke, backend tests/package, documentation check and its self-test, Node policy tests, Angular component specs and build |
+| Published stack in a browser | ./e2e/run (Playwright 1.63, Chromium headless shell 153, release stack from the local artifacts) | PASS 1/1 in 4.7 s: host login, open room, deep link reload, WebSocket badge live through nginx, guest joins by PIN, host starts, guest answers A and sees "Đã ghi nhận đáp án A.", reveal shows 1000 on both screens, host finishes, GET /api/history/{id} returns 1000 after the archive commits. First run found that the browser origin must match PUBLIC_ORIGIN (127.0.0.1 vs localhost), fixed in e2e/run. Earlier manual check on v0.2.2 is in git history | REV_PLACEHOLDER (images built from the Java 25 artifacts) | macOS host, Docker Desktop 29.7.2, Node 22.22.3 for Playwright | 2026-09-24 | local ./e2e/run |
 
 Read the [verification status](#gate-status) for the latest executed
 result per gate. Never infer pass from the presence or name of a test.
@@ -165,7 +166,7 @@ the tree is clean for it, so the gate never blocks on pre-existing debt.
 | frontend | Under frontend/src/app, features import only core and shared, core only shared, shared nothing in the application; features never import each other or the app root; a policy module (.mjs) imports only other .mjs modules; *.spec.ts files are exempt |
 | imports | Java imports follow the module matrix in [backend architecture](architecture/backend.md); a package outside the matrix fails until it is registered there and in the map; inside a layered module the layer directions hold (api → application → domain, infrastructure → application and domain, domain imports the JDK and domain types only) and another module never imports api or infrastructure |
 
-The three AGENTS files and the GitHub templates are linted too.
+The four AGENTS files and the GitHub templates are linted too.
 
 ### CI
 
@@ -245,10 +246,11 @@ titles are the changelog.
    `quiz-room-vX.Y.Z.jar` attached.
 5. Record the run in the [verification status](#gate-status): result,
    tag, revision, environment, run URL. That commit carries `[skip ci]`.
-6. Try the published stack once before announcing it: pull the images by tag, start
-   compose.release.yaml as described in [deployment](architecture/README.md#deployment),
-   and open a room in a browser. The gate proves the images boot and route; a browser
-   session is the only check of the UI today.
+6. Run the browser check before announcing it: `./e2e/run` on the tagged tree, or
+   start compose.release.yaml from the pulled images as described in
+   [deployment](architecture/README.md#deployment) and run `E2E_BASE_URL=... npm test`
+   in `e2e/`. The gate proves the images boot and route; the browser check proves the
+   round a user plays. Record it in the gate status.
 
 If the tag push started no `release` run, the tagged commit's message carries
 `[skip ci]`: GitHub applies the marker to the push event of a tag as well, and to
