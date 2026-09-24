@@ -1,75 +1,78 @@
-# Quiz Room — sample game kiểu Kahoot
+# Quiz Room — a Kahoot-style sample game
 
 [![ci](https://github.com/tungnguyenitvn/kahoot/actions/workflows/ci.yml/badge.svg)](https://github.com/tungnguyenitvn/kahoot/actions/workflows/ci.yml)
 [![release](https://github.com/tungnguyenitvn/kahoot/actions/workflows/release.yml/badge.svg)](https://github.com/tungnguyenitvn/kahoot/actions/workflows/release.yml)
 
-Sample end-to-end dùng **Java 25 + Spring Boot 4.1.1 + Gradle 9.7.1 + Angular 22**. Host tạo quiz, mở phòng; người chơi vào bằng PIN, trả lời theo thứ tự và nhận điểm theo bậc. REST xử lý command; WebSocket phát state realtime. Redis giữ trạng thái live và leaderboard, PostgreSQL giữ tài khoản, quiz bất biến và lịch sử.
+An end-to-end sample on **Java 25 + Spring Boot 4.1.1 + Gradle 9.7.1 + Angular 22**. A host authors a quiz and opens a room; players join by PIN, answer in order and receive tiered scores. REST handles commands; WebSocket pushes the realtime state. Redis holds the live state and the leaderboard, PostgreSQL holds accounts, immutable quizzes and history.
 
-## Chạy bằng Docker
+## Run with Docker
 
-Cần Docker Engine, Docker Compose v2 và Bash (WSL trên Windows). Sao chép `.env.example` thành `.env` nếu muốn đổi tài khoản seed, sau đó:
+Requires Docker Engine, Docker Compose v2 and Bash (WSL on Windows). Copy `.env.example` to `.env` if you want to change the seeded account, then:
 
 ```bash
-./scripts/bootstrap             # build image backend và frontend
+./scripts/bootstrap             # build the backend and frontend images
 docker compose up               # PostgreSQL, Redis, backend, Angular
 ```
 
-Mở `http://localhost:4200`; health endpoint của backend là `http://localhost:8080/actuator/health`. Tài khoản host mặc định là `host@example.test` / `local-quiz-only`. Host vào **Host studio**, tạo quiz tối thiểu một câu, xuất bản rồi mở phòng. Người chơi mở tab khác, nhập PIN sáu chữ số và tên. Dừng bằng `Ctrl+C`; dữ liệu dev nằm trong volume Docker.
+Open `http://localhost:4200`; the backend health endpoint is `http://localhost:8080/actuator/health`. The default host account is `host@example.test` / `local-quiz-only`. The host opens **Host studio**, creates a quiz with at least one question, publishes it and opens a room. A player opens another tab and enters the six-digit PIN and a name. Stop with `Ctrl+C`; development data lives in Docker volumes.
 
-Gradle wrapper (`backend/gradlew`, `backend/gradle/wrapper`) và `frontend/package-lock.json` nằm trong cây nguồn; container backend chỉ cần JDK và chạy wrapper đã commit, container frontend dùng `npm ci` khi có lockfile. Chạy công cụ ngoài Docker cần JDK 25, Gradle 9.7.1, Node theo `engines` trong `frontend/package.json` và TypeScript 6.0.x.
+The Gradle wrapper (`backend/gradlew`, `backend/gradle/wrapper`) and `frontend/package-lock.json` are in the source tree; the backend container only needs a JDK and runs the committed wrapper, the frontend container uses `npm ci` with the lockfile. Running the tools outside Docker needs JDK 25, Gradle 9.7.1, Node as pinned by `engines` in `frontend/package.json`, and TypeScript 6.0.x.
 
-## Kiểm tra
+## Checks
 
 ```bash
-./scripts/test                 # Redis/PostgreSQL tạm thời + backend unit/integration
-./scripts/verify               # cổng đầy đủ: compose config, Lua smoke, backend, check-docs, Angular test/build
-node scripts/check-docs.mjs    # lint tài liệu, chạy được không cần Docker
-node --test scripts/check-docs.test.mjs   # self-test của lint trên cây fixture
-node --test scripts/check-pr.test.mjs     # self-test của check title/description PR (workflow pr-shape)
+./scripts/test                 # temporary Redis/PostgreSQL + backend unit/integration tests
+./scripts/verify               # full gate: compose config, Lua smoke, backend, check-docs, Angular tests/build
+node scripts/check-docs.mjs    # documentation lint, runs without Docker
+node --test scripts/check-docs.test.mjs   # self-test of the lint on fixture trees
+node --test scripts/check-pr.test.mjs     # self-test of the pull request title/description check (workflow pr-shape)
 node --test "frontend/tests/**/*.test.mjs"
-cd frontend && npm run test:ui    # component spec Angular (Vitest + jsdom), cần node_modules
-./e2e/run                      # kiểm tra trình duyệt trên stack release (Playwright); chạy tay trước release, không nằm trong gate
-texlua scripts/test-room.lua . # smoke test Lua với Redis double; texlua hoặc Lua 5.3/5.4 bất kỳ
+cd frontend && npm run test:ui    # Angular component specs (Vitest + jsdom), needs node_modules
+./e2e/run                      # browser check of the release stack (Playwright); run by hand before a release, not in the gate
+texlua scripts/test-room.lua . # Lua smoke test with a Redis double; texlua or any Lua 5.3/5.4
 ```
 
-Các lệnh offline không kiểm tra Spring, Redis, PostgreSQL, browser hay WebSocket thật. `./scripts/verify` dùng compose cô lập, không đụng volume dev; Gradle distribution, dependency Maven và cache npm nằm trong `.cache/` (đã gitignore) để lần chạy sau và CI không tải lại. Phạm vi từng gate và ma trận acceptance ID → test: [testing](docs/development.md#testing-and-evidence).
+The offline commands do not exercise Spring, Redis, PostgreSQL, a browser or a real WebSocket. `./scripts/verify` uses an isolated compose project and never touches the development volumes; the Gradle distribution, the Maven dependencies and the npm cache live in `.cache/` (gitignored) so later runs and CI do not download them again. The scope of every gate and the acceptance ID → test matrix: [testing](docs/development.md#testing-and-evidence).
 
 ## Release
 
-CI (`ci.yml`) chạy `scripts/verify` rồi `scripts/smoke-release` trên mọi PR và push lên
-`main`; image release chỉ đóng gói đúng jar và bundle mà gate đã kiểm tra, không build
-lại. Gắn tag `vX.Y.Z` rồi push tag: workflow `release` verify lại cây được tag, đóng gói
-image release (`backend/Dockerfile.release`, `frontend/Dockerfile.release`),
-smoke test stack `compose.release.yaml`, đẩy image lên GHCR
-(`ghcr.io/tungnguyenitvn/kahoot-backend`, `ghcr.io/tungnguyenitvn/kahoot-frontend`)
-và tạo GitHub Release kèm jar. Chạy stack từ image đã publish:
+CI (`ci.yml`) runs `scripts/verify` and then `scripts/smoke-release` on every pull request and
+push to `main`; the release images package exactly the jar and the bundle the gate
+checked, without rebuilding. Push a tag `vX.Y.Z`: the `release` workflow verifies the
+tagged tree again, packages the release images (`backend/Dockerfile.release`,
+`frontend/Dockerfile.release`), smoke-tests the `compose.release.yaml` stack, pushes the
+images to GHCR (`ghcr.io/tungnguyenitvn/kahoot-backend`,
+`ghcr.io/tungnguyenitvn/kahoot-frontend`) and creates a GitHub Release with the jar. Run
+the stack from the published images:
 
 ```bash
 DB_PASSWORD=... DEMO_PASSWORD=... PUBLIC_ORIGIN=http://localhost:8081 docker compose -f compose.release.yaml up
 ```
 
-Stack release chưa có TLS; đặt TLS terminator phía trước và chỉnh `PUBLIC_ORIGIN`,
-`COOKIE_SECURE` theo [deployment](docs/architecture/README.md#deployment). Quy trình cắt
-release, hotfix và required checks: [delivery](docs/development.md#delivery).
+The release stack has no TLS; put a TLS terminator in front and set `PUBLIC_ORIGIN` and
+`COOKIE_SECURE` as described in [deployment](docs/architecture/README.md#deployment). Cutting
+a release, hotfixes and the required checks: [delivery](docs/development.md#delivery).
 
-## Đóng góp
+## Contributing
 
-Quy trình từng bước cho developer, từ nhận issue, đặt tên nhánh, chạy gate local, đến
-mở PR đúng template và review: [CONTRIBUTING](CONTRIBUTING.md).
+The step-by-step guide for a developer, from taking an issue, naming the branch and
+running the gates locally to opening a pull request on the template and review:
+[CONTRIBUTING](CONTRIBUTING.md).
 
-## Tài liệu và workflow AI
+## Documentation and the AI workflow
 
-Bắt đầu tại [bản đồ tài liệu](docs/README.md): mỗi câu hỏi có đúng một tài liệu sở hữu
-và một bài kiểm tra đặt nội dung để biết câu nào thuộc domain, feature, architecture hay contract.
-[Workflow](docs/development.md#workflow) và AGENTS.md quy định context, scope và
-Definition of Done cho người và AI. [Verification status](docs/development.md#gate-status)
-ghi kết quả mới nhất của từng gate kèm revision và môi trường.
+Start at the [documentation map](docs/README.md): every question has exactly one owning
+document, and a placement test says whether a sentence belongs to the domain, a feature,
+the architecture or a contract. The [workflow](docs/development.md#workflow) and AGENTS.md
+define context, scope and the Definition of Done for humans and AI. The
+[verification status](docs/development.md#gate-status) records the latest result of every
+gate with its revision and environment.
 
-## Thiết kế
+## Design
 
-- [Feature index](docs/features/README.md) · [invariant live quiz](docs/domain.md#acceptance-invariants) · [quy tắc game](docs/domain.md)
-- [Tổng quan kiến trúc](docs/architecture/README.md) · [Backend architecture](docs/architecture/backend.md) · [Frontend architecture](docs/architecture/frontend.md) · [Redis live state](docs/adr/0002-redis-game-state.md)
+- [Feature index](docs/features/README.md) · [live quiz invariants](docs/domain.md#acceptance-invariants) · [game rules](docs/domain.md)
+- [System architecture](docs/architecture/README.md) · [Backend architecture](docs/architecture/backend.md) · [Frontend architecture](docs/architecture/frontend.md) · [Redis live state](docs/adr/0002-redis-game-state.md)
 - [Contracts index](docs/README.md#contracts) · [REST API](docs/contracts/rest-api.md) · [Redis room](docs/contracts/redis-room.md) · [WebSocket](docs/contracts/websocket.md) · [Realtime delivery](docs/architecture/backend.md#realtime-delivery)
-- [Kiểm thử và traceability](docs/development.md#testing-and-evidence) · [vận hành](docs/operations.md)
+- [Testing and traceability](docs/development.md#testing-and-evidence) · [operations](docs/operations.md)
 
-Đây là sample một backend instance: các invariant về nguyên tử, thứ tự và privacy nằm trong [domain rules](docs/domain.md#acceptance-invariants), phạm vi và non-goal trong [product scope](docs/architecture/README.md#scope-and-non-goals).
+This is a single-backend-instance sample: the atomicity, ordering and privacy invariants are in the [domain rules](docs/domain.md#acceptance-invariants), the scope and non-goals in the [product scope](docs/architecture/README.md#scope-and-non-goals).

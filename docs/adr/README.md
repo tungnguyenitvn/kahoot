@@ -15,6 +15,7 @@
 | [0011](0011-java-24-until-the-next-toolchain-change.md) | Java 24 stays pinned until the next toolchain change; the target is the LTS | Superseded by 0012 | 2026-09-24 |
 | [0012](0012-java-25-lts-and-gradle-9.md) | Java 25 LTS and Gradle 9 now | Accepted | 2026-09-24 |
 | [0013](0013-contracts-as-reviewed-markdown.md) | Contracts are reviewed Markdown, not generated schemas | Accepted | 2026-09-24 |
+| [0014](0014-english-only-documentation.md) | English for every document | Accepted | 2026-09-24 |
 
 ## Template
 

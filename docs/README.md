@@ -77,7 +77,7 @@ the whole project verified because one smoke test passes.
 
 ## Language policy
 
-English is canonical for the domain, architecture, contracts, ADR, development and
-operations documents and for the AGENTS files. Vietnamese is used for README.md and
-docs/features. Never mix languages inside one document; UI strings, error codes,
-identifiers and acceptance IDs are quoted verbatim.
+Every document is English: README.md, CONTRIBUTING.md, everything under docs/, the
+AGENTS files and the GitHub templates ([ADR 0014](adr/0014-english-only-documentation.md)).
+The application's user interface is Vietnamese; UI strings, error codes, identifiers
+and acceptance IDs are quoted verbatim in the language they carry, never translated.

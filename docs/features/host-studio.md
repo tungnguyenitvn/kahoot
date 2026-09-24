@@ -1,65 +1,67 @@
 # Feature: host studio
 
-## Mục tiêu
+## Goal
 
-Host quản lý quiz, tạo draft, publish quiz và mở live room từ một màn hình điều
-hành duy nhất.
+The host manages quizzes, creates drafts, publishes quizzes and opens live rooms from
+one control screen.
 
 ## Entry point
 
-- Route: `/host`, bảo vệ bởi host route guard.
-- Dữ liệu catalog dùng `httpResource`; form authoring dùng Angular Signal Forms.
-- Studio có ba khu vực: quiz catalog, quiz authoring và recent rooms.
+- Route: `/host`, protected by the host route guard.
+- Catalog data uses `httpResource`; the authoring form uses Angular Signal Forms.
+- The studio has three areas: quiz catalog, quiz authoring and recent rooms.
 
 ## Quiz catalog
 
-- `GET /api/quizzes` trả quiz của host.
-- Card hiển thị title, số câu và status `DRAFT`/`PUBLISHED`.
-- Draft có action **Xuất bản**.
-- Published quiz có action **Mở phòng**.
-- Sau publish, catalog được reload; mở room thành công điều hướng tới room.
+- `GET /api/quizzes` returns the host's quizzes.
+- A card shows the title, the number of questions and the status `DRAFT`/`PUBLISHED`.
+- A draft has the action **Xuất bản**.
+- A published quiz has the action **Mở phòng**.
+- After publishing, the catalog reloads; opening a room successfully navigates to the room.
 
 ## Quiz authoring
 
-- Host nhập title và xây dựng danh sách câu hỏi tạm thời.
-- Mỗi câu có các option A–D với một đáp án đúng và thời gian giới hạn; số câu tối đa,
-  số option và khoảng thời gian theo [domain rules](../domain.md), bound validate
-  theo [REST contract](../contracts/rest-api.md#catalog-host).
-- Có thể xóa câu trước khi lưu.
-- **Lưu bản nháp** gọi `POST /api/quizzes` và xóa danh sách câu đã lưu sau success; các field editor còn lại giữ nguyên.
-- Quiz đã publish không chỉnh sửa tại chỗ; room copy immutable question content khi
-  được tạo, là LIVE-01 trong [domain rules](../domain.md#acceptance-invariants).
+- The host enters a title and builds a temporary list of questions.
+- Each question has the options A–D with one correct answer and a time limit; the
+  maximum number of questions, the number of options and the time range are
+  [domain rules](../domain.md), the validation bounds are in the
+  [REST contract](../contracts/rest-api.md#catalog-host).
+- A question can be removed before saving.
+- **Lưu bản nháp** calls `POST /api/quizzes` and clears the saved question list on success;
+  the other editor fields keep their values.
+- A published quiz is not edited in place; a room copies the immutable question content
+  when it is created, which is LIVE-01 in the [domain rules](../domain.md#acceptance-invariants).
 
-## Open room và idempotency
+## Open room and idempotency
 
-- **Mở phòng** gọi `POST /api/rooms` với `quizId` và một `commandId` được Studio giữ
-  ổn định cho quiz đó trong bộ nhớ cho tới khi mở phòng thành công.
-- Nếu response mất, retry cùng commandId phải mở lại cùng room, không tạo room thứ hai.
-  Sau khi thành công, lần **Mở phòng** tiếp theo dùng commandId mới nên tạo room mới
-  cho cùng quiz.
-- Sau snapshot thành công, navigate `/room/{id}`.
-- Quiz draft creation hiện chưa có commandId server-side; khi timeout mơ hồ, reload
-  catalog trước khi retry để tránh tạo draft trùng.
+- **Mở phòng** calls `POST /api/rooms` with the `quizId` and a `commandId` that the studio
+  keeps stable in memory for that quiz until a room opens successfully.
+- If the response is lost, a retry with the same commandId must return the same room,
+  never a second one. After success, the next **Mở phòng** uses a new commandId and so
+  creates a new room for the same quiz.
+- After a successful snapshot, navigate to `/room/{id}`.
+- Draft creation has no server-side commandId yet; on an ambiguous timeout, reload the
+  catalog before retrying to avoid a duplicate draft.
 
-## UI state và failure behavior
+## UI state and failure behavior
 
 | State | Behavior |
 |---|---|
-| Loading catalog/history | Catalog có loading text; history chưa có loading/empty state riêng |
-| Form invalid | Khóa action dựa trên Signal Forms; error từng field/giới hạn text phía UI còn thiếu |
-| Mutation busy | Khóa button để chặn double-click |
-| `QUIZ_NOT_PUBLISHED` | Không mở room, yêu cầu publish trước |
-| Storage/network error | Giữ form draft đang soạn, hiển thị retryable alert |
-| Unauthorized | Guard chặn vào route; lỗi session trong route hiển thị alert, chưa tự redirect |
+| Loading catalog/history | The catalog has a loading text; the history has no loading or empty state of its own yet |
+| Form invalid | Actions locked by Signal Forms; per-field errors and text limits on the UI side are still missing |
+| Mutation busy | Button locked to prevent a double click |
+| `QUIZ_NOT_PUBLISHED` | No room is opened; publish first |
+| Storage/network error | Keep the draft being edited, show a retryable alert |
+| Unauthorized | The guard blocks the route; a session error inside the route shows an alert, no automatic redirect yet |
 
 ## Acceptance criteria
 
-- STUDIO-01: Guest không render được Studio qua route guard.
-- STUDIO-02: Không lưu quiz nếu thiếu title, câu hỏi hoặc option.
-- STUDIO-03: Publish chỉ tác động quiz của host hiện tại.
-- STUDIO-05: Retry open-room không tạo room duplicate.
+- STUDIO-01: A guest cannot render the studio; the route guard blocks it.
+- STUDIO-02: A quiz without a title, a question or an option is not saved.
+- STUDIO-03: Publishing affects only the current host's quiz.
+- STUDIO-05: A retried open-room command never creates a duplicate room.
 
 ## Contracts
 
-Xem [REST catalog và room contract](../contracts/rest-api.md),
-[backend architecture](../architecture/backend.md) và [Live room](live-room.md).
+See the [REST catalog and room contract](../contracts/rest-api.md), the
+[backend architecture](../architecture/backend.md) and [Live room](live-room.md).
