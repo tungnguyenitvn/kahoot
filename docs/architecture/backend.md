@@ -13,7 +13,7 @@ to [conventions](../development.md#conventions) and every numeric value to the
 
 | Module | Bounded context | Public surface | Design |
 |---|---|---|---|
-| identity | Host accounts, guest and host session identity, HTTP security | `Identity` value; `Accounts` facade (register, look up); `Sessions` port (liveness) | [identity/catalog](#identity-and-catalog) |
+| identity | Host accounts, guest and host session identity, HTTP security | `domain.Identity`, `domain.Account`; `application.Identities` (current, ensure, host), `Accounts` (register, find); `Sessions` port (liveness) | [identity/catalog](#identity-and-catalog) |
 | catalog | Host-owned draft and published quizzes | `application.QuizCatalog` facade; `domain.Quiz`, `Question`, `Draft`, `QuizStatus` | [identity/catalog](#identity-and-catalog) |
 | gameplay | Room provisioning, live commands, snapshots, realtime delivery | `Rooms` facade (create, join, snapshot, answer, control) | [gameplay](#gameplay), [realtime](#realtime-delivery) |
 | archive | Ordered event projection and host history | `History` read facade | [archive](#archive) |
@@ -174,13 +174,10 @@ it from this table.
 
 | Gap | Current state | Target |
 |---|---|---|
-| Layers | catalog has the four layers; identity, gameplay and archive are flat packages with the role in the class-name suffix | api / application / domain / infrastructure per module |
+| Layers | catalog and identity have the four layers; gameplay and archive are flat packages with the role in the class-name suffix | api / application / domain / infrastructure per module |
 | archive → gameplay | archive imports `RedisRooms` for key helpers; the checker map still allows the edge | archive derives keys from the contract; the edge leaves the map in the same change |
-| bootstrap → app_user | `DemoSeed` inserts the demo account with SQL | identity exposes `Accounts` |
 | gameplay stores | `RoomService` runs JDBC for game_room provisioning and calls Redis directly | JDBC and Redis behind ports in `gameplay.infrastructure` |
 | Command pre-validation | Name and PIN checks live in `RoomService` | `gameplay.domain` command types |
-| Session liveness | `RoomWebSocketHub` reads the Spring Session repository directly | identity `Sessions` port |
-| identity user lookup | `SecurityConfig` runs an inline JDBC query | `identity.infrastructure` account repository |
 | archive read model | `HistoryController` queries JDBC directly | `History` facade over an archive repository |
 | Layer enforcement | The checker sees only the module segment of an import | A rule for api/infrastructure privacy; ArchUnit needs task authority and an ADR |
 
@@ -194,14 +191,22 @@ responsibility splits, not when another screen is added.
 
 #### Identity
 
-Identity.current resolves host principal or existing guestId from Spring Session.
-Identity.ensure bootstraps a guest identity when necessary; PIN and display name
-are not credentials. Guest session IDs must never appear in public room state.
+`application.Identities` answers "who is calling" for every module: `current` takes
+the signed-in host from the `Principals` port, else the guest already in the HTTP
+session, else SESSION_REQUIRED; `ensure` bootstraps a guest identity once per session;
+`host` is the 403 LOGIN_REQUIRED decision. `domain.Identity` is a value (U:account or
+G:guest); PIN and display name are not credentials, and a guest id never appears in
+public room state. `application.Accounts` is the only way to create an account
+(idempotent `register`, used by the demo seed) over the `AccountRepository` port;
+`domain.Account` keeps the hash out of `toString`.
 
-SecurityConfig owns CSRF, form login/logout and HTTP filter authorization.
-REST room handlers and the WS handshake perform room authorization after the
-filter. Catalog/history require HOST role. Ws transport does not replace CSRF for
-HTTP mutations. Logout/session invalidation is rechecked before snapshot sending.
+`infrastructure.SecurityConfig` owns CSRF, form login/logout and HTTP filter
+authorization; `HostPrincipal` wraps an `Account` for Spring Security and lives in the
+session, so `Account` is serializable; `SecurityPrincipals`, `JdbcAccountRepository`
+and `SpringSessions` implement the ports. REST room handlers and the WS handshake
+perform room authorization after the filter. Catalog and history require the HOST
+role. WS transport does not replace CSRF for HTTP mutations; logout or session
+invalidation is rechecked through `Sessions` before a snapshot is sent.
 
 #### Catalog
 

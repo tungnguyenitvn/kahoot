@@ -121,7 +121,7 @@ COMMAND_LIMIT capacity) map to the [acceptance scenarios](architecture/README.md
 | JOIN-01 | NOT COVERED: form validation needs browser E2E | none |
 | JOIN-02 | GameIntegrationTest#deadlineMembershipAndNameChecksDoNotDependOnPostgres; scripts/test-room.lua "membership, host authority, revoked access and name uniqueness" | scripts/test, Lua smoke |
 | JOIN-03 | GameIntegrationTest#realCookiesCsrfAuthorizationReconnectAndArchiveReplay (snapshot after answer returns the session's receipt) | scripts/test |
-| JOIN-04 | GameIntegrationTest#realCookiesCsrfAuthorizationReconnectAndArchiveReplay (guest start returns 403); scripts/test-room.lua HOST_REQUIRED check | scripts/test, Lua smoke |
+| JOIN-04 | GameIntegrationTest#realCookiesCsrfAuthorizationReconnectAndArchiveReplay (guest start returns 403); scripts/test-room.lua HOST_REQUIRED check; IdentitiesTest#hostRequiresAnAccount (a guest identity never passes host()) | scripts/test, Lua smoke |
 | STUDIO-01 | NOT COVERED: route guard needs browser E2E; the API-level 401 for guests is covered under LOGIN-03 | none |
 | STUDIO-02 | DraftTest#rejectsMissingTitleQuestionsOrOptions and #keepsValidContent (domain invariants; the HTTP 400 mapping of the same bounds has no separate test) | scripts/test |
 | STUDIO-03 | QuizCatalogTest#publishIsScopedToTheOwner (application facade over an in-memory repository; the SQL owner clause has no separate test) | scripts/test |

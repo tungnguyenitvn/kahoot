@@ -3,7 +3,7 @@ package dev.sample.quiz.gameplay;
 import java.util.Map;
 import java.util.List;
 import java.util.UUID;
-import dev.sample.quiz.identity.Identity;
+import dev.sample.quiz.identity.domain.Identity;
 import dev.sample.quiz.catalog.application.QuizCatalog;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

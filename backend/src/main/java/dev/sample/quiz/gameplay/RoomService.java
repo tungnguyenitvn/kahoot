@@ -8,7 +8,7 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
-import dev.sample.quiz.identity.Identity;
+import dev.sample.quiz.identity.domain.Identity;
 import dev.sample.quiz.catalog.application.QuizCatalog;
 import dev.sample.quiz.catalog.domain.QuizStatus;
 import dev.sample.quiz.shared.ApiException;
