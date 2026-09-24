@@ -1,4 +1,4 @@
-package dev.sample.quiz.gameplay;
+package dev.sample.quiz.gameplay.infrastructure;
 
 import java.util.Arrays;
 import java.util.List;
