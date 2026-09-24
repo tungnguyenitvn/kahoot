@@ -1,41 +1,43 @@
 # Feature: room history
 
-## Mục tiêu
+## Goal
 
-Host xem lại các room đã tạo và kết quả đã được archive bền vững trong PostgreSQL.
-Đây là panel trong Host Studio, chưa phải route độc lập.
+The host reviews the rooms they created and the results durably archived in
+PostgreSQL. It is a panel inside the host studio, not a route of its own yet.
 
 ## Main flow
 
-1. Studio gọi `GET /api/history` để lấy danh sách room gần đây của host; số lượng tối đa
-   theo [REST contract](../contracts/rest-api.md#history-host).
-2. Mỗi card hiển thị title, phase và link quay lại room nếu snapshot còn truy cập được.
-3. Room `FINISHED` hiển thị action **Kết quả đã lưu**.
-4. Action gọi `GET /api/history/{id}` và render participant/score từ archive.
+1. The studio calls `GET /api/history` for the host's recent rooms; the maximum count is
+   in the [REST contract](../contracts/rest-api.md#history-host).
+2. Each card shows the title, the phase and a link back to the room while its snapshot
+   is still reachable.
+3. A `FINISHED` room shows the action **Kết quả đã lưu**.
+4. The action calls `GET /api/history/{id}` and renders the participants and scores from
+   the archive.
 
-## State và consistency
+## State and consistency
 
 | State | Behavior |
 |---|---|
-| Loading | Chưa có placeholder/empty-state riêng cho history panel |
-| `ARCHIVE_NOT_READY` | Hiện error code trong alert; cho phép reload, không thay bằng kết quả rỗng |
-| Archived | Hiển thị score projection từ PostgreSQL |
-| Storage/auth error | Giữ layout Studio và hiển thị retryable alert |
+| Loading | No placeholder or empty state of its own for the history panel yet |
+| `ARCHIVE_NOT_READY` | Show the error code in an alert; allow a reload, never substitute an empty result |
+| Archived | Show the score projection from PostgreSQL |
+| Storage/auth error | Keep the studio layout and show a retryable alert |
 
-Archive có thể trễ so với live room. Redis live leaderboard và PostgreSQL history
-không được trộn trong một response; archive worker replay Stream event idempotently
-theo room version trước khi ACK.
+The archive may lag behind the live room. The Redis live leaderboard and the PostgreSQL
+history are never mixed in one response; the archive worker replays the Stream events
+idempotently by room version before it ACKs.
 
 ## Acceptance criteria
 
-- HIST-01: Host chỉ xem được history của chính mình.
-- HIST-02: Room chưa FINISHED không được coi là archived result hoàn chỉnh.
-- HIST-04: Kết quả archive vẫn đọc được sau khi Redis live keys được cleanup.
+- HIST-01: A host reads only their own history.
+- HIST-02: A room that is not FINISHED is never presented as a complete archived result.
+- HIST-04: The archived result stays readable after the Redis live keys are cleaned up.
 
-Replay hoặc worker retry không nhân đôi answer/score là invariant LIVE-06 trong
-[domain rules](../domain.md#acceptance-invariants).
+That a replay or a worker retry never duplicates an answer or a score is invariant
+LIVE-06 in the [domain rules](../domain.md#acceptance-invariants).
 
 ## Contracts
 
-Xem [REST API](../contracts/rest-api.md), [Redis room contract](../contracts/redis-room.md)
-và [archive design](../architecture/backend.md#archive).
+See the [REST API](../contracts/rest-api.md), the [Redis room contract](../contracts/redis-room.md)
+and the [archive design](../architecture/backend.md#archive).

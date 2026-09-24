@@ -1,38 +1,39 @@
 # Feature documentation
 
-Feature được tổ chức theo user journey và capability, thay vì gom tất cả UI vào một
-tài liệu tổng hợp. Mỗi feature có route/màn hình chính, state, action, error và
-acceptance criteria riêng.
+Features are organized by user journey and capability instead of one document that
+collects every screen. Each feature has its main route or screen, its states, actions,
+errors and its own acceptance criteria.
 
-| Feature | Route/màn hình | Nội dung |
+| Feature | Route / screen | Content |
 |---|---|---|
-| [Login](login.md) | `/login` | Host authentication, session và logout |
-| [Join room](join-room.md) | `/` | Guest vào phòng bằng PIN và nickname |
-| [Host studio](host-studio.md) | `/host` | Tạo quiz, publish và mở room |
-| [Live room](live-room.md) | `/room/:id` | Lobby, question, submit answer, reveal, ranking và realtime |
-| [Room history](room-history.md) | `/host` (panel) | Danh sách phòng và kết quả archive |
+| [Login](login.md) | `/login` | Host authentication, session and logout |
+| [Join room](join-room.md) | `/` | A guest enters a room by PIN and nickname |
+| [Host studio](host-studio.md) | `/host` | Author a quiz, publish it and open a room |
+| [Live room](live-room.md) | `/room/:id` | Lobby, question, submit answer, reveal, ranking and realtime |
+| [Room history](room-history.md) | `/host` (panel) | The list of rooms and archived results |
 
-Các invariant xuyên feature (scoring, concurrency, privacy, archive, fail-closed) có ID
-`LIVE-xx` và nằm trong [domain rules](../domain.md#acceptance-invariants); feature
-docs chỉ tham chiếu, không phát biểu lại.
+Cross-feature invariants (scoring, concurrency, privacy, archive, fail-closed) carry
+`LIVE-xx` IDs and live in the [domain rules](../domain.md#acceptance-invariants); feature
+documents reference them and never restate them.
 
-Feature docs trả lời “người dùng đang cố đạt mục tiêu gì và hệ thống phải phản hồi
-ra sao”; architecture/contracts trả lời “hệ thống thực hiện điều đó bằng boundary
-nào”. Hai lớp tài liệu phải được cập nhật cùng nhau khi thêm hoặc đổi màn hình.
+Feature documents answer "what is the user trying to achieve and how must the system
+respond"; architecture and contracts answer "through which boundary the system does
+it". The two layers are updated together whenever a screen is added or changed.
 
-Mỗi acceptance criterion có ID ổn định theo prefix của feature (LOGIN, JOIN, STUDIO,
-ROOM, ANSWER, HIST) hoặc LIVE cho invariant domain. Một hành vi chỉ có một ID; ID không
-được đánh số lại. Test, issue và PR tham chiếu ID thay vì diễn giải lại; ma trận
-ID → test nằm trong [testing](../development.md#testing-and-evidence). Feature docs viết bằng tiếng
-Việt theo [chính sách ngôn ngữ](../README.md#language-policy); tên UI, mã lỗi và
-identifier giữ nguyên, số liệu chỉ link tới tài liệu sở hữu.
+Every acceptance criterion has a stable ID with the feature's prefix (LOGIN, JOIN,
+STUDIO, ROOM, ANSWER, HIST) or LIVE for a domain invariant. One behavior has one ID; IDs
+are never renumbered. Tests, issues and pull requests reference the ID instead of
+paraphrasing it; the ID → test matrix is in [testing](../development.md#testing-and-evidence).
+The [language policy](../README.md#language-policy) applies: the documents are English,
+UI strings, error codes and identifiers are quoted verbatim, and a number links to its
+owning document.
 
 ## Retired IDs
 
-ID dưới đây đã được hợp nhất vào invariant domain; không định nghĩa lại và không tái
-sử dụng số của chúng.
+The IDs below were folded into domain invariants; they are never redefined and their
+numbers are never reused.
 
-| ID cũ | Thay bằng |
+| Old ID | Replaced by |
 |---|---|
 | ROOM-01 | LIVE-03 |
 | ROOM-02 | LIVE-03 |

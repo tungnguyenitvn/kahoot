@@ -96,22 +96,22 @@ for (const id of definitions.keys()) {
 for (const id of rows.keys()) if (!definitions.has(id)) report('L3', `${id}: traceability row for an undefined or retired ID`);
 
 // L4: a numeric limit appears only in its owner document; link text is exempt. Owners follow the precedence in docs/README.md.
-// Word boundaries are Unicode-aware so Vietnamese words such as "ký tự" terminate a match.
+// Word boundaries are Unicode-aware so a quoted UI string in Vietnamese terminates a match.
 const literal = (source, flags = '') => new RegExp(`(?<![\\p{L}\\p{N}])(?:${source})(?![\\p{L}\\p{N}])`, 'u' + flags);
 const DOMAIN = ['docs/domain.md'], LIMITS = ['docs/architecture/README.md'];
 const LITERALS = [
   { pattern: literal('1024'), owners: ['docs/contracts/websocket.md'] },
   { pattern: literal('top 10', 'i'), owners: LIMITS },
   { pattern: literal('5\\s*[–-]\\s*120'), owners: DOMAIN },
-  { pattern: literal('(?:tối đa|maximum|up to) 20', 'i'), owners: DOMAIN },
-  { pattern: literal('24 (?:ký tự|characters)', 'i'), owners: ['docs/contracts/rest-api.md'] },
-  { pattern: literal('100 (?:participants|memberships|người chơi)', 'i'), owners: DOMAIN },
+  { pattern: literal('(?:maximum|up to) 20', 'i'), owners: DOMAIN },
+  { pattern: literal('24 characters', 'i'), owners: ['docs/contracts/rest-api.md'] },
+  { pattern: literal('100 (?:participants|memberships)', 'i'), owners: DOMAIN },
   { pattern: literal('2 (?:hours|giờ)', 'i'), owners: DOMAIN },
   { pattern: literal('2 h'), owners: LIMITS },
   { pattern: literal('24 h|24-hour|24 hours', 'i'), owners: LIMITS },
-  { pattern: literal('5 (?:s|seconds|giây)', 'i'), owners: LIMITS },
+  { pattern: literal('5 (?:s|seconds)', 'i'), owners: LIMITS },
   { pattern: literal('250 ms'), owners: LIMITS },
-  { pattern: literal('10 s|10 seconds|10 giây', 'i'), owners: LIMITS },
+  { pattern: literal('10 s|10 seconds', 'i'), owners: LIMITS },
   { pattern: literal('1,000 connections|150 per room|150/room', 'i'), owners: LIMITS },
   { pattern: literal('500 entries|500 (?:lệnh|commands)', 'i'), owners: LIMITS },
   { pattern: literal('100 active rooms', 'i'), owners: LIMITS },
