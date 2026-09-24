@@ -25,6 +25,7 @@ Gradle wrapper (`backend/gradlew`, `backend/gradle/wrapper`) và `frontend/packa
 ./scripts/verify               # cổng đầy đủ: compose config, Lua smoke, backend, check-docs, Angular test/build
 node scripts/check-docs.mjs    # lint tài liệu, chạy được không cần Docker
 node --test scripts/check-docs.test.mjs   # self-test của lint trên cây fixture
+node --test scripts/check-pr.test.mjs     # self-test của check title/description PR (workflow pr-shape)
 node --test "frontend/tests/**/*.test.mjs"
 cd frontend && npm run test:ui    # component spec Angular (Vitest + jsdom), cần node_modules
 ./e2e/run                      # kiểm tra trình duyệt trên stack release (Playwright); chạy tay trước release, không nằm trong gate
