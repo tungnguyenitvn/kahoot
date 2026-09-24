@@ -6,6 +6,7 @@ import { errorMessage } from '../../core/errors';
 import { Room, Receipt } from '../../shared/models/room';
 import { leaderboard, shouldApply, isRoomSnapshot } from './room-state.mjs';
 import { RoomConnection } from './room-connection.mjs';
+import { nextPending, keepsPending, reconcilePending } from './answer-policy.mjs';
 
 @Injectable()
 export class RoomStore {
@@ -90,24 +91,16 @@ export class RoomStore {
     this.now.set(Date.now() + this.offset);
     this.room.set(value);
     this.transportError.set('');
-    const pending = this.pendingAnswer();
-    if (pending && (value.question?.roundId !== pending.roundId || value.me.answer?.option === pending.option)) {
-      this.pendingAnswer.set(null);
-    }
+    this.pendingAnswer.set(reconcilePending(this.pendingAnswer(), value));
   }
 
   async refresh() { await this.connection?.refresh(); }
 
   async answer() {
     if (this.busy() || this.accessDenied() || this.disposed) return;
-    const q = this.room()?.question;
-    const option = this.selection();
-    let pending = this.pendingAnswer();
-    if (!pending) {
-      if (!q || option === null) return;
-      pending = {roundId: q.roundId, option, commandId: crypto.randomUUID()};
-      this.pendingAnswer.set(pending);
-    }
+    const pending = nextPending(this.pendingAnswer(), this.room()?.question, this.selection(), () => crypto.randomUUID());
+    if (!pending) return;
+    this.pendingAnswer.set(pending);
     const connection = this.connection;
     const id = this.id;
     this.busy.set(true);
@@ -120,8 +113,7 @@ export class RoomStore {
     } catch (error) {
       if (this.disposed || connection !== this.connection) return;
       this.commandError.set(errorMessage(error));
-      if (error instanceof HttpErrorResponse && error.status >= 400 && error.status < 500 &&
-          ![408, 429].includes(error.status)) this.pendingAnswer.set(null);
+      if (!keepsPending(error instanceof HttpErrorResponse ? error.status : null)) this.pendingAnswer.set(null);
       await this.refresh();
     } finally {
       if (!this.disposed && connection === this.connection) this.busy.set(false);
