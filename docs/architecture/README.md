@@ -186,8 +186,8 @@ rate. Set thresholds with the product owner BEFORE the load run, not afterwards.
 - JDBC/Redis pool sizing, session fixation effects on active WS and cross-tab logout
   need production-specific testing.
 - Draft save is not server-idempotent; ambiguous timeouts require catalog inspection.
-- Java 24 is a non-LTS release pinned by the build, Dockerfile and docs; no upgrade
-  decision to a long-term-support release is recorded yet.
+- Java 24 is a non-LTS release pinned by the build, Dockerfile and docs; it moves to
+  the LTS with the next toolchain change ([ADR 0011](../adr/0011-java-24-until-the-next-toolchain-change.md)).
 
 Each unresolved item must stay visible until code and appropriate evidence exist.
 See the [verification status](../development.md#gate-status).

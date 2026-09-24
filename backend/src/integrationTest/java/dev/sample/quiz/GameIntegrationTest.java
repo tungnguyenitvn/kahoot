@@ -160,7 +160,7 @@ class GameIntegrationTest {
         assertEquals("ROOM_ACCESS_DENIED",json.readTree(reconnected.revoked.get(5,TimeUnit.SECONDS)).path("code").asText());
         second.abort();
     }
-    @Test @DisplayName("LOGIN-01 LOGIN-03 JOIN-03 JOIN-04 STUDIO-05 LIVE-01 LIVE-06 real cookies, CSRF, authorization, idempotent create and archive replay")
+    @Test @DisplayName("LOGIN-01 LOGIN-03 JOIN-03 JOIN-04 STUDIO-05 HIST-04 LIVE-01 LIVE-06 real cookies, CSRF, authorization, idempotent create, archive replay and history after key cleanup")
     void realCookiesCsrfAuthorizationReconnectAndArchiveReplay() throws Exception {
         Browser owner=new Browser();Browser guest=new Browser();Browser stranger=new Browser();
         owner.init();guest.init();stranger.init();
@@ -202,6 +202,9 @@ class GameIntegrationTest {
         projection.apply(id,event.get("stream_id").toString(),RoomEvent.of(json.readValue(event.get("payload").toString(),Map.class)));
         assertEquals(1,db.queryForObject("select count(*) from answer where room_id=?",Integer.class,UUID.fromString(id)));
         assertEquals(1000,owner.get("/api/history/"+id).get(0).path("score").asInt());
+        redis.delete(LuaRooms.keys(id)); // HIST-04: retention expiry removes the live keys; the archived result and the listing still answer
+        assertEquals(1000,owner.get("/api/history/"+id).get(0).path("score").asInt());
+        assertTrue(owner.get("/api/history").findValues("id").stream().anyMatch(n->n.asText().equals(id)),"history list after key cleanup");
         assertEquals(204,owner.request("POST","/api/auth/logout","{}",true).statusCode());
         assertEquals(401,owner.request("GET","/api/quizzes",null,false).statusCode());
     }

@@ -41,7 +41,7 @@ Angular files hold rendering and wiring only.
 |---|---|---|---|
 | Page / template | `features/<name>/<name>.page.ts` | Render state, collect intent, bind Signal Forms | Socket or timer lifecycle, scoring |
 | Route store | `features/<name>/<name>.store.ts`, provided at the route | Server snapshot, pending commands, derived signals | Credentials, transport retry |
-| Policy module | `features/<name>/*.mjs` | Version guard, ranking, snapshot validation, connection lifecycle | Angular, DOM, HttpClient |
+| Policy module | `features/<name>/*.mjs` | Version guard, ranking, snapshot validation, connection lifecycle, answer pending and retry | Angular, DOM, HttpClient |
 | core/auth | `core/` | Session bootstrap, CSRF refresh, identity signal | Room or catalog state |
 | core/http | `core/` | HttpClient wrapper, error code to message mapping | Retry of mutations |
 | shared/models | `shared/` | Wire types mirrored from contracts | Behavior; runtime validation belongs to a policy module |

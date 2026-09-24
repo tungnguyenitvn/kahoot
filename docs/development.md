@@ -131,12 +131,12 @@ COMMAND_LIMIT capacity) map to the [acceptance scenarios](architecture/README.md
 | ROOM-04 | frontend/tests/app/index-base-href.test.mjs ("ROOM-04 index.html declares base href", a reload on a deep route loads the bundle); scripts/smoke-release deep-link check in CI. The pending-command memory part has no test harness | node --test, ci release images |
 | ROOM-07 | frontend/tests/room/room-connection.test.mjs ("ROOM-07 capacity refusal (close 1012) schedules no retry timer ..."); RoomWebSocketHubTest#registrationRefusesRoomCapacityBeforeSchedulingWork (server side of the refusal) | node --test, scripts/test |
 | ANSWER-01 | NOT COVERED: template interaction needs browser E2E | none |
-| ANSWER-04 | NOT COVERED: RoomStore retry policy has no test harness | none |
+| ANSWER-04 | frontend/tests/room/answer-policy.test.mjs ("ANSWER-04 a retry reuses the original option, round and commandId", "ANSWER-04 a new round drops a stale pending answer"); the store wires the policy, its own signals have no harness | node --test |
 | ANSWER-06 | frontend/tests/room/room-connection.test.mjs ("socket open sends only SYNC ...", "REVOKED rejects late HTTP result ...") | node --test |
-| ANSWER-07 | NOT COVERED: RoomStore error policy has no test harness | none |
+| ANSWER-07 | frontend/tests/room/answer-policy.test.mjs ("ANSWER-07 network failures, 5xx, 408 and 429 keep the pending answer") | node --test |
 | HIST-01 | HistoryTest#resultsAreScopedToTheOwner (facade over an in-memory repository; the SQL owner clause has no separate test) | scripts/test |
 | HIST-02 | HistoryTest#unfinishedRoomIsNotReady | scripts/test |
-| HIST-04 | NOT COVERED: reading results after Redis key cleanup untested | none |
+| HIST-04 | GameIntegrationTest#realCookiesCsrfAuthorizationReconnectAndArchiveReplay (result and listing answer after the room keys are deleted) | scripts/test |
 | LIVE-01 | GameIntegrationTest#realCookiesCsrfAuthorizationReconnectAndArchiveReplay (stranger gets 403); GameIntegrationTest#websocketAuthenticatesByCookiePushesStateAndRejectsMutations (no session or bad Origin refused); GameIntegrationTest#deadlineMembershipAndNameChecksDoNotDependOnPostgres (intruder snapshot denied); scripts/test-room.lua membership check | scripts/test, Lua smoke |
 | LIVE-02 | GameIntegrationTest#deadlineMembershipAndNameChecksDoNotDependOnPostgres (DEADLINE_PASSED, timer reveal); scripts/test-room.lua "deadline equality rejects even before the timer runs", "room expiry finalizes once" | scripts/test, Lua smoke |
 | LIVE-03 | GameIntegrationTest#parallelRetriesProduceOneReceiptOneScoreAndOneAnswerEvent, #parallelCorrectPlayersGetDistinctRanksAndTierScores, #receiptSurvivesRoundTransitionAndConflictingAnswerIsRejected; scripts/test-room.lua "retries preserve receipt ...", "wrong answers do not consume a correct rank ..." | scripts/test, Lua smoke |
